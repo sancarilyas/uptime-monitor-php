@@ -214,7 +214,7 @@ include dirname(__DIR__, 3) . '/includes/layout/header.php';
 function testSMS() {
     const testNumber = document.getElementById('test_number').value;
     if (!testNumber) {
-        alert('Lütfen test telefon numarası girin!');
+        showWarning('Uyarı', 'Lütfen test telefon numarası girin!');
         return;
     }
     
@@ -232,13 +232,13 @@ function testSMS() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Test SMS başarıyla gönderildi!');
+                showSuccess('Başarılı', 'Test SMS başarıyla gönderildi!');
             } else {
-                alert('SMS gönderilirken hata oluştu: ' + data.message);
+                showError('Hata', 'SMS gönderilirken hata oluştu: ' + data.message);
             }
         })
         .catch(error => {
-            alert('Bağlantı hatası: ' + error.message);
+            showError('Hata', 'Bağlantı hatası: ' + error.message);
         });
     }
 }

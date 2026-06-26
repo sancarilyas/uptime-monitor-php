@@ -202,13 +202,13 @@ function testTelegram() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Test mesajı başarıyla gönderildi!');
+                showSuccess('Başarılı', 'Test mesajı başarıyla gönderildi!');
             } else {
-                alert('Mesaj gönderilirken hata oluştu: ' + data.message);
+                showError('Hata', 'Mesaj gönderilirken hata oluştu: ' + data.message);
             }
         })
         .catch(error => {
-            alert('Bağlantı hatası: ' + error.message);
+            showError('Hata', 'Bağlantı hatası: ' + error.message);
         });
     }
 }
@@ -216,7 +216,7 @@ function testTelegram() {
 function getChatId() {
     const botToken = document.getElementById('bot_token').value;
     if (!botToken) {
-        alert('Lütfen önce Bot Token girin!');
+        showWarning('Uyarı', 'Lütfen önce Bot Token girin!');
         return;
     }
     
@@ -234,13 +234,13 @@ function getChatId() {
     .then(data => {
         if (data.success && data.chat_id) {
             document.getElementById('chat_id').value = data.chat_id;
-            alert('Chat ID bulundu: ' + data.chat_id);
+            showSuccess('Başarılı', 'Chat ID bulundu: ' + data.chat_id);
         } else {
-            alert('Chat ID bulunamadı. Bot\'a mesaj gönderip tekrar deneyin.');
+            showError('Hata', 'Chat ID bulunamadı. Bot\'a mesaj gönderip tekrar deneyin.');
         }
     })
     .catch(error => {
-        alert('Bağlantı hatası: ' + error.message);
+        showError('Hata', 'Bağlantı hatası: ' + error.message);
     });
 }
 </script>

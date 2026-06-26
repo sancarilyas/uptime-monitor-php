@@ -744,3 +744,113 @@ body.dark-mode .card.bg-white {
 body.dark-mode .card.text-dark {
     color: #e2e8f0 !important;
 }
+
+/* ============================================================
+   DASHBOARD FİLTRELERİ (durum çipleri + grup)
+   ============================================================ */
+.dashboard-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+.status-filter-chips {
+    display: inline-flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-color, #e2e8f0);
+    background: var(--card-bg, #fff);
+    color: var(--text-secondary, #64748b);
+    font-size: 0.825rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+.filter-chip:hover { border-color: var(--primary-color, #3b82f6); color: var(--primary-color, #3b82f6); }
+.filter-chip.active {
+    background: var(--primary-color, #3b82f6);
+    border-color: var(--primary-color, #3b82f6);
+    color: #fff;
+}
+.filter-chip-up.active   { background: var(--success-color, #10b981); border-color: var(--success-color, #10b981); }
+.filter-chip-down.active { background: var(--danger-color, #ef4444);  border-color: var(--danger-color, #ef4444); }
+.group-filter .form-select { min-width: 170px; }
+
+body.dark-mode .filter-chip { background: #1e293b; border-color: #334155; color: #cbd5e1; }
+body.dark-mode .filter-chip:hover { border-color: #3b82f6; color: #93c5fd; }
+body.dark-mode .filter-chip.active { color: #fff; }
+
+/* ============================================================
+   YÜKLEME DURUMU (skeleton shimmer)
+   ============================================================ */
+@keyframes dashboardShimmer {
+    0%   { opacity: 1; }
+    50%  { opacity: 0.55; }
+    100% { opacity: 1; }
+}
+.is-refreshing {
+    animation: dashboardShimmer 1.1s ease-in-out infinite;
+    pointer-events: none;
+}
+.is-refreshing::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 20%, rgba(255,255,255,0.25) 50%, transparent 80%);
+    background-size: 200% 100%;
+    animation: skeletonSweep 1.4s linear infinite;
+    border-radius: inherit;
+    pointer-events: none;
+}
+.site-card { position: relative; }
+@keyframes skeletonSweep {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .is-refreshing, .is-refreshing::after { animation: none; }
+}
+
+/* Yeniden kullanılabilir skeleton bloğu (detay sayfaları için) */
+.skeleton {
+    background: linear-gradient(100deg, #e2e8f0 30%, #f1f5f9 50%, #e2e8f0 70%);
+    background-size: 200% 100%;
+    animation: skeletonSweep 1.4s linear infinite;
+    border-radius: 8px;
+}
+body.dark-mode .skeleton {
+    background: linear-gradient(100deg, #334155 30%, #475569 50%, #334155 70%);
+    background-size: 200% 100%;
+}
+
+/* ============================================================
+   BOŞ DURUM (empty state)
+   ============================================================ */
+.empty-state-card {
+    border: 2px dashed var(--border-color, #e2e8f0) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+.empty-state-icon {
+    width: 88px;
+    height: 88px;
+    margin: 0 auto;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-color, #3b82f6);
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: #fff;
+    font-size: 2.25rem;
+    box-shadow: 0 12px 28px -10px rgba(59,130,246,0.55);
+}
+body.dark-mode .empty-state-card { border-color: #334155 !important; }

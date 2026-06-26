@@ -139,4 +139,20 @@ function createTables($pdo)
 
 // Tabloları oluştur
 createTables($pdo);
+
+// --- Şema göçleri (var olan kurulumlar için kolon ekleme) ---
+function migrateSchema($pdo)
+{
+    // sites.is_public — public status sayfasında gösterim için
+    try {
+        $col = $pdo->query("SHOW COLUMNS FROM sites LIKE 'is_public'")->fetch();
+        if (!$col) {
+            $pdo->exec("ALTER TABLE sites ADD COLUMN is_public TINYINT(1) NOT NULL DEFAULT 0");
+        }
+    } catch (PDOException $e) {
+        error_log("migrateSchema is_public hatası: " . $e->getMessage());
+    }
+}
+
+migrateSchema($pdo);
 ?>

@@ -231,13 +231,13 @@ document.getElementById('changePasswordForm').addEventListener('submit', functio
     
     if (newPassword !== confirmPassword) {
         e.preventDefault();
-        alert('<?= __('passwords_not_match') ?? 'Yeni şifreler eşleşmiyor' ?>');
+        showWarning('Uyarı', '<?= __('passwords_not_match') ?? 'Yeni şifreler eşleşmiyor' ?>');
         return false;
     }
     
     if (currentPassword === newPassword) {
         e.preventDefault();
-        alert('<?= __('same_password_error') ?? 'Yeni şifre mevcut şifre ile aynı olamaz' ?>');
+        showError('Hata', '<?= __('same_password_error') ?? 'Yeni şifre mevcut şifre ile aynı olamaz' ?>');
         return false;
     }
 });

@@ -1,0 +1,273 @@
+/* ============================================================
+   Public Status Sayfası
+   header.css içindeki :root değişkenlerini kullanır.
+   ============================================================ */
+
+/* Boyamadan önce koyu arka plan (flash önleme) */
+html.preload-dark,
+html.preload-dark body {
+    background: #0f172a !important;
+}
+
+.status-page {
+    background: var(--light-bg);
+    min-height: 100vh;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.status-container {
+    width: 100%;
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* ---------- Üst bar ---------- */
+.status-topbar {
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+.status-topbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+}
+.status-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text-primary);
+}
+.status-brand i { color: var(--primary-color); }
+
+.status-topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.status-theme-toggle {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.status-theme-toggle:hover {
+    background: var(--light-bg);
+    color: var(--primary-color);
+}
+.status-login-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: 10px;
+    background: var(--primary-color);
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: background 0.2s ease;
+}
+.status-login-link:hover { background: var(--primary-dark); color: #fff; }
+
+/* ---------- İçerik ---------- */
+.status-main { padding-top: 2rem; padding-bottom: 3rem; }
+
+/* ---------- Genel durum bandı ---------- */
+.status-hero {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.5rem 1.75rem;
+    border-radius: 16px;
+    color: #fff;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.25);
+}
+.status-hero-icon { font-size: 2.5rem; line-height: 1; opacity: 0.95; }
+.status-hero-text { flex: 1; }
+.status-hero-text h1 { font-size: 1.4rem; font-weight: 700; margin: 0 0 0.25rem; }
+.status-hero-text p { margin: 0; font-size: 0.85rem; opacity: 0.9; }
+.status-auto-refresh { white-space: nowrap; }
+.status-hero-count {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+.status-hero-count small { display: block; font-size: 0.7rem; font-weight: 500; opacity: 0.9; }
+.status-count-up { font-size: 1.8rem; }
+
+.status-hero-ok      { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+.status-hero-partial { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+.status-hero-major   { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+.status-hero-neutral { background: linear-gradient(135deg, #64748b 0%, #475569 100%); }
+
+/* ---------- Boş durum ---------- */
+.status-empty {
+    text-align: center;
+    padding: 4rem 1rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+}
+.status-empty i { font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem; }
+.status-empty h2 { font-size: 1.25rem; color: var(--text-primary); }
+.status-empty p { color: var(--text-secondary); max-width: 460px; margin: 0.5rem auto 0; }
+
+/* ---------- Servis kartı ---------- */
+.status-list { display: flex; flex-direction: column; gap: 1rem; }
+.status-item {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 1.1rem 1.25rem;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.status-item:hover {
+    box-shadow: 0 8px 24px -12px rgba(0,0,0,0.18);
+    transform: translateY(-1px);
+}
+.status-item-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.9rem;
+}
+.status-item-name { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
+.status-item-name h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-primary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.status-item-host { font-size: 0.8rem; color: var(--text-muted); }
+
+/* Durum noktası + nabız animasyonu */
+.status-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    position: relative;
+}
+.status-dot-up   { background: var(--success-color); box-shadow: 0 0 0 4px rgba(16,185,129,0.18); }
+.status-dot-down { background: var(--danger-color);  box-shadow: 0 0 0 4px rgba(239,68,68,0.18); }
+.status-dot-up::after {
+    content: '';
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    background: var(--success-color);
+    animation: statusPulse 2s ease-out infinite;
+}
+@keyframes statusPulse {
+    0%   { transform: scale(1); opacity: 0.7; }
+    100% { transform: scale(2.6); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .status-dot-up::after { animation: none; }
+}
+
+.status-item-badge { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+.status-pill-up   { background: var(--success-light); color: #047857; }
+.status-pill-down { background: var(--danger-light);  color: #b91c1c; }
+.status-uptime-30 { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
+.status-uptime-30 small { font-size: 0.65rem; font-weight: 500; color: var(--text-muted); }
+
+/* ---------- 90 günlük şerit ---------- */
+.status-strip {
+    display: flex;
+    gap: 2px;
+    align-items: stretch;
+    height: 34px;
+}
+.status-bar {
+    flex: 1 1 0;
+    min-width: 2px;
+    border-radius: 2px;
+    background: var(--border-color);
+    transition: transform 0.1s ease, filter 0.1s ease;
+    cursor: default;
+}
+.status-bar:hover { transform: scaleY(1.12); filter: brightness(1.05); }
+.status-bar-ok   { background: var(--success-color); }
+.status-bar-warn { background: var(--warning-color); }
+.status-bar-down { background: var(--danger-color); }
+.status-bar-none { background: var(--border-color); }
+
+.status-strip-legend {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.4rem;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+.status-metrics { display: flex; gap: 0.9rem; }
+.status-metrics strong { color: var(--text-secondary); }
+
+/* ---------- Footer ---------- */
+.status-footer {
+    text-align: center;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* ============================================================
+   KARANLIK MOD
+   ============================================================ */
+body.dark-mode.status-page { background: #0f172a; color: #e2e8f0; }
+body.dark-mode .status-topbar { background: #1e293b; border-bottom-color: #334155; }
+body.dark-mode .status-brand { color: #f1f5f9; }
+body.dark-mode .status-theme-toggle { border-color: #334155; color: #cbd5e1; }
+body.dark-mode .status-theme-toggle:hover { background: #334155; color: #fff; }
+body.dark-mode .status-item,
+body.dark-mode .status-empty { background: #1e293b; border-color: #334155; }
+body.dark-mode .status-item-name h3,
+body.dark-mode .status-empty h2,
+body.dark-mode .status-uptime-30 { color: #f1f5f9; }
+body.dark-mode .status-item-host,
+body.dark-mode .status-strip-legend,
+body.dark-mode .status-footer { color: #94a3b8; }
+body.dark-mode .status-bar-none,
+body.dark-mode .status-bar { background: #334155; }
+body.dark-mode .status-bar-ok   { background: var(--success-color); }
+body.dark-mode .status-bar-warn { background: var(--warning-color); }
+body.dark-mode .status-bar-down { background: var(--danger-color); }
+body.dark-mode .status-pill-up   { background: rgba(16,185,129,0.15); color: #6ee7b7; }
+body.dark-mode .status-pill-down { background: rgba(239,68,68,0.15);  color: #fca5a5; }
+body.dark-mode .status-metrics strong { color: #cbd5e1; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 640px) {
+    .status-hero { flex-direction: column; text-align: center; gap: 0.75rem; padding: 1.25rem; }
+    .status-hero-count { font-size: 1.25rem; }
+    .status-item-head { flex-direction: column; align-items: flex-start; gap: 0.6rem; }
+    .status-item-badge { width: 100%; justify-content: space-between; }
+    .status-login-link span { display: none; }
+    .status-strip { height: 28px; }
+}

@@ -202,7 +202,7 @@ function loadLogs() {
             } else {
                 // Oturum süresi dolmuşsa login sayfasına yönlendir
                 if (data.message && data.message.includes('Oturum süresi dolmuş')) {
-                    alert('Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.');
+                    showWarning('Uyarı', 'Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.');
                     window.location.href = base_url + 'login';
                     return;
                 }

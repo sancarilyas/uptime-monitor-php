@@ -15,7 +15,8 @@
     --border-color: #e2e8f0;
     --text-primary: #1e293b;
     --text-secondary: #64748b;
-    --text-muted: #94a3b8;
+    /* WCAG AA kontrastı için koyulaştırıldı (eski #94a3b8 ~2.6:1 idi, başarısız) */
+    --text-muted: #6b7280;
 }
 
 * {

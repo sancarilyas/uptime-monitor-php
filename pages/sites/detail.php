@@ -808,7 +808,7 @@ async function loadPage(page) {
         }
     } catch (error) {
         console.error('Sayfa yükleme hatası:', error);
-        alert('Veriler yüklenirken bir hata oluştu.');
+        showError('Hata', 'Veriler yüklenirken bir hata oluştu.');
     } finally {
         isLoading = false;
         tbody.style.pointerEvents = 'auto';
@@ -1024,13 +1024,13 @@ async function manualCheck(siteId, siteName) {
             
         } else {
             // Hata mesajı
-            alert('Manuel kontrol başarısız: ' + (data.message || 'Bilinmeyen hata'));
+            showError('Hata', 'Manuel kontrol başarısız: ' + (data.message || 'Bilinmeyen hata'));
         }
         
     } catch (error) {
         console.error('Manuel kontrol hatası:', error);
         console.error('Error stack:', error.stack);
-        alert('Bağlantı hatası: ' + error.message);
+        showError('Hata', 'Bağlantı hatası: ' + error.message);
     } finally {
         // Butonu eski haline getir
         btn.disabled = false;
@@ -1054,14 +1054,14 @@ function deleteSite(siteId, siteName) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Site başarıyla silindi!');
+                showSuccess('Başarılı', 'Site başarıyla silindi!');
                 window.location.href = '<?= $base_url ?>sites';
             } else {
-                alert('Site silinirken hata oluştu: ' + data.message);
+                showError('Hata', 'Site silinirken hata oluştu: ' + data.message);
             }
         })
         .catch(error => {
-            alert('Bağlantı hatası: ' + error.message);
+            showError('Hata', 'Bağlantı hatası: ' + error.message);
         });
     }
 }

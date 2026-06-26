@@ -62,31 +62,34 @@ $current_lang = getCurrentLanguage();
 </head>
 <body>
     <!-- Tema Değiştirme Butonu -->
-    <button class="theme-toggle" onclick="toggleTheme()" title="Tema Değiştir">
-        <i class="fas fa-moon" id="themeIcon"></i>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Tema Değiştir" aria-label="Açık/koyu tema değiştir">
+        <i class="fas fa-moon" id="themeIcon" aria-hidden="true"></i>
     </button>
 
     <div class="main-container">
         <?php if (isset($_SESSION['user_id'])): ?>
         <!-- Navbar -->
-        <nav class="navbar navbar-expand-lg navbar-dark">
+        <nav class="navbar navbar-expand-lg navbar-dark" aria-label="<?= __('main_navigation') ?? 'Ana menü' ?>">
             <div class="container">
                 <a class="navbar-brand" href="<?= $base_url ?>dashboard">
-                    <i class="fas fa-heartbeat"></i> <?= __('app_name') ?>
+                    <i class="fas fa-heartbeat" aria-hidden="true"></i> <?= __('app_name') ?>
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="<?= __('toggle_menu') ?? 'Menüyü aç/kapat' ?>">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link <?= (basename($_SERVER['PHP_SELF']) == 'index.php' && strpos($_SERVER['REQUEST_URI'], '/dashboard') !== false) ? 'active' : '' ?>" href="<?= $base_url ?>dashboard">
-                                <i class="fas fa-tachometer-alt"></i> <?= __('dashboard') ?>
+                            <?php $is_dash = (basename($_SERVER['PHP_SELF']) == 'index.php' && strpos($_SERVER['REQUEST_URI'], '/dashboard') !== false); ?>
+                            <a class="nav-link <?= $is_dash ? 'active' : '' ?>" href="<?= $base_url ?>dashboard" <?= $is_dash ? 'aria-current="page"' : '' ?>>
+                                <i class="fas fa-tachometer-alt" aria-hidden="true"></i> <?= __('dashboard') ?>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/sites') !== false ? 'active' : '' ?>" href="<?= $base_url ?>sites">
-                                <i class="fas fa-globe"></i> <?= __('my_sites') ?>
+                            <?php $is_sites = strpos($_SERVER['REQUEST_URI'], '/sites') !== false; ?>
+                            <a class="nav-link <?= $is_sites ? 'active' : '' ?>" href="<?= $base_url ?>sites" <?= $is_sites ? 'aria-current="page"' : '' ?>>
+                                <i class="fas fa-globe" aria-hidden="true"></i> <?= __('my_sites') ?>
                             </a>
                         </li>
                         <?php if (isAdmin()): ?>

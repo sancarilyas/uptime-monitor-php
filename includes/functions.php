@@ -921,4 +921,65 @@ function rateLimitReset($key) {
 function clientIp() {
     return $_SERVER['REMOTE_ADDR'] ?? 'cli';
 }
+
+// ============================================================
+// PUBLIC STATUS SAYFASI YARDIMCILARI
+// ============================================================
+
+/**
+ * Public status sayfasında gösterilecek siteleri döndürür.
+ * is_public = 1 ve status = 'active' olan siteler.
+ */
+function getPublicSites() {
+    global $pdo;
+    try {
+        $stmt = $pdo->query("
+            SELECT id, name, url, last_status, last_check, response_time
+            FROM sites
+            WHERE is_public = 1 AND status = 'active'
+            ORDER BY name ASC
+        ");
+        return $stmt->fetchAll();
+    } catch (PDOException $e) {
+        error_log("getPublicSites hatası: " . $e->getMessage());
+        return [];
+    }
+}
+
+/**
+ * Bir site için son $days günün GÜNLÜK uptime yüzdesini döndürür.
+ * Dönüş: ['Y-m-d' => float|null] (veri olmayan gün için null).
+ * Tek sorgu — şerit (bar) görünümü için verimli.
+ */
+function getDailyUptimeStrip($site_id, $days = 90) {
+    global $pdo;
+
+    // Boş iskeleti hazırla (en eski -> en yeni)
+    $strip = [];
+    for ($i = $days - 1; $i >= 0; $i--) {
+        $strip[date('Y-m-d', strtotime("-{$i} days"))] = null;
+    }
+
+    try {
+        $stmt = $pdo->prepare("
+            SELECT DATE(timestamp) AS day,
+                   COUNT(*) AS total,
+                   SUM(CASE WHEN status = 'up' THEN 1 ELSE 0 END) AS up_count
+            FROM uptime_logs
+            WHERE site_id = ? AND timestamp >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+            GROUP BY DATE(timestamp)
+        ");
+        $stmt->execute([$site_id, $days]);
+        foreach ($stmt->fetchAll() as $row) {
+            if (isset($strip[$row['day']]) || array_key_exists($row['day'], $strip)) {
+                $total = (int)$row['total'];
+                $strip[$row['day']] = $total > 0 ? ((int)$row['up_count'] / $total) * 100 : null;
+            }
+        }
+    } catch (PDOException $e) {
+        error_log("getDailyUptimeStrip hatası: " . $e->getMessage());
+    }
+
+    return $strip;
+}
 ?>

@@ -159,13 +159,19 @@ $total_sites = count($sites);
 $active_sites = 0;
 $total_uptime = 0;
 
+$dashboard_groups = [];
 foreach ($sites as $site) {
     if ($site['last_status'] === 'up') {
         $active_sites++;
     }
     $uptime_24h = calculateUptime($site['id'], 1);
     $total_uptime += $uptime_24h;
+    if (!empty($site['group_name'])) {
+        $dashboard_groups[$site['group_name']] = true;
+    }
 }
+$dashboard_groups = array_keys($dashboard_groups);
+sort($dashboard_groups);
 
 $avg_uptime = $total_sites > 0 ? $total_uptime / $total_sites : 0;
 
@@ -303,7 +309,35 @@ include __DIR__ . '/../../includes/layout/header.php';
             </div>
         </div>
     </div>
-    
+
+    <?php if (!empty($sites)): ?>
+    <!-- Durum ve Grup Filtreleri -->
+    <div class="dashboard-filters mb-3">
+        <div class="status-filter-chips" role="group" aria-label="<?= __('status_filter') ?? 'Durum filtresi' ?>">
+            <button type="button" class="filter-chip active" data-status-filter="all">
+                <i class="fas fa-layer-group"></i> <?= __('all') ?? 'Tümü' ?>
+            </button>
+            <button type="button" class="filter-chip filter-chip-up" data-status-filter="up">
+                <i class="fas fa-circle-check"></i> <?= __('up') ?? 'Çalışan' ?>
+            </button>
+            <button type="button" class="filter-chip filter-chip-down" data-status-filter="down">
+                <i class="fas fa-circle-xmark"></i> <?= __('down') ?? 'Kesinti' ?>
+            </button>
+        </div>
+        <?php if (!empty($dashboard_groups)): ?>
+        <div class="group-filter">
+            <label for="groupFilter" class="visually-hidden"><?= __('group_filter') ?? 'Grup filtresi' ?></label>
+            <select id="groupFilter" class="form-select form-select-sm">
+                <option value="all"><?= __('all_groups') ?? 'Tüm gruplar' ?></option>
+                <?php foreach ($dashboard_groups as $g): ?>
+                    <option value="<?= htmlspecialchars($g) ?>"><?= htmlspecialchars($g) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
+
     <!-- Arama Sonucu Bilgisi -->
     <div id="searchResultInfo" class="alert alert-info mb-3" style="display: none; padding: 0.5rem 1rem;">
         <i class="fas fa-info-circle"></i> 
@@ -315,11 +349,16 @@ include __DIR__ . '/../../includes/layout/header.php';
     <?php if (empty($sites)): ?>
         <div class="row">
             <div class="col-12">
-                <div class="card text-center py-5">
+                <div class="card text-center py-5 empty-state-card">
                     <div class="card-body">
-                        <i class="fas fa-globe fa-3x text-muted mb-3"></i>
-                        <h4 class="text-muted"><?= __('no_sites_yet') ?></h4>
-                        <p class="text-muted"><?= __('add_first_site') ?></p>
+                        <div class="empty-state-icon mb-3">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <h4 class="mb-2"><?= __('no_sites_yet') ?></h4>
+                        <p class="text-muted mb-4"><?= __('add_first_site') ?></p>
+                        <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#addSiteModal">
+                            <i class="fas fa-plus me-1"></i> <?= __('add_site') ?? 'İlk Siteni Ekle' ?>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -335,14 +374,14 @@ include __DIR__ . '/../../includes/layout/header.php';
                     $status_text = $site['last_status'] === 'up' ? __('up') : __('down');
                     $status_color = $site['last_status'] === 'up' ? 'success' : 'danger';
                     ?>
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-lg-4 col-md-6 site-filter-item" data-status="<?= $status_class ?>" data-group="<?= htmlspecialchars($site['group_name'] ?? '') ?>">
                         <div class="card site-card h-100 <?= $status_class ?>" data-site-id="<?= $site['id'] ?>" style="cursor: pointer;" onclick="window.location.href='<?= $base_url ?>sites/detail?id=<?= $site['id'] ?>'">
                             <div class="card-body">
                                 <div class="card-title-container mb-2">
                                     <h5 class="card-title mb-0" title="<?= htmlspecialchars($site['name']) ?>"><?= htmlspecialchars($site['name']) ?></h5>
                                     <div class="dropdown" onclick="event.stopPropagation();">
-                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                            <i class="fas fa-ellipsis-v"></i>
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-label="Site işlemleri menüsü" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v" aria-hidden="true"></i>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end">
                                             <li><a class="dropdown-item" href="<?= $base_url ?>sites/detail?id=<?= $site['id'] ?>">
@@ -420,7 +459,7 @@ include __DIR__ . '/../../includes/layout/header.php';
                             $status_text = $site['last_status'] === 'up' ? __('up') : __('down');
                             $status_color = $site['last_status'] === 'up' ? 'success' : 'danger';
                             ?>
-                            <tr class="dashboard-row <?= $status_class ?>" data-site-id="<?= $site['id'] ?>" style="cursor: pointer;" onclick="window.location.href='/uptime/sites/detail?id=<?= $site['id'] ?>'">
+                            <tr class="dashboard-row site-filter-item <?= $status_class ?>" data-site-id="<?= $site['id'] ?>" data-status="<?= $status_class ?>" data-group="<?= htmlspecialchars($site['group_name'] ?? '') ?>" style="cursor: pointer;" onclick="window.location.href='<?= $base_url ?>sites/detail?id=<?= $site['id'] ?>'">
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="flex-grow-1">
@@ -459,8 +498,8 @@ include __DIR__ . '/../../includes/layout/header.php';
                                 </td>
                                 <td onclick="event.stopPropagation();">
                                     <div class="dropdown">
-                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                            <i class="fas fa-ellipsis-v"></i>
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-label="Site işlemleri menüsü" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v" aria-hidden="true"></i>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end">
                                             <li><a class="dropdown-item" href="/uptime/sites/detail?id=<?= $site['id'] ?>">
@@ -486,14 +525,14 @@ include __DIR__ . '/../../includes/layout/header.php';
 </div>
 
 <!-- Site Ekleme Modal -->
-<div class="modal fade" id="addSiteModal" tabindex="-1">
+<div class="modal fade" id="addSiteModal" tabindex="-1" aria-labelledby="addSiteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-plus"></i> <?= __('add_new_site') ?>
+                <h5 class="modal-title" id="addSiteModalLabel">
+                    <i class="fas fa-plus" aria-hidden="true"></i> <?= __('add_new_site') ?>
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
             </div>
             <form method="POST">
                 <?= csrfField() ?>
@@ -639,14 +678,14 @@ include __DIR__ . '/../../includes/layout/header.php';
 </div>
 
 <!-- Site Düzenleme Modal -->
-<div class="modal fade" id="editSiteModal" tabindex="-1">
+<div class="modal fade" id="editSiteModal" tabindex="-1" aria-labelledby="editSiteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-edit"></i> <?= __('edit') ?> <?= __('site_name') ?>
+                <h5 class="modal-title" id="editSiteModalLabel">
+                    <i class="fas fa-edit" aria-hidden="true"></i> <?= __('edit') ?> <?= __('site_name') ?>
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
             </div>
             <form id="editSiteForm">
                 <div class="modal-body">
@@ -772,14 +811,14 @@ include __DIR__ . '/../../includes/layout/header.php';
 </div>
 
 <!-- Site Silme Modal -->
-<div class="modal fade" id="deleteSiteModal" tabindex="-1">
+<div class="modal fade" id="deleteSiteModal" tabindex="-1" aria-labelledby="deleteSiteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title text-danger">
-                    <i class="fas fa-exclamation-triangle"></i> <?= __('delete') ?> <?= __('site_name') ?>
+                <h5 class="modal-title text-danger" id="deleteSiteModalLabel">
+                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i> <?= __('delete') ?> <?= __('site_name') ?>
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
             </div>
             <div class="modal-body">
                 <p><?= __('confirm_delete_site') ?></p>

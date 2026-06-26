@@ -62,6 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $notify_on_down = isset($_POST['notify_on_down']) ? 1 : 0;
     $notify_on_up = isset($_POST['notify_on_up']) ? 1 : 0;
     $notification_priority = $_POST['notification_priority'] ?? 'medium';
+    $is_public = isset($_POST['is_public']) ? 1 : 0;
     
     // Validasyon
     if (empty($name) || empty($url)) {
@@ -94,18 +95,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     name = ?, url = ?, monitor_path = ?, description = ?, check_interval = ?, notification_emails = ?,
                     group_id = ?, notifications_enabled = ?, email_notifications = ?, telegram_notifications = ?,
                     sms_notifications = ?, webhook_notifications = ?, notify_on_down = ?, notify_on_up = ?,
-                    notification_priority = ?, updated_at = NOW() 
+                    notification_priority = ?, is_public = ?, updated_at = NOW()
                     WHERE id = ? AND (user_id = ? OR (group_id = ? AND ? = 1))
                 ");
-                
+
                 // Admin kontrolü için parametre
                 $is_admin = ($user_role === 'admin') ? 1 : 0;
-                
+
                 $stmt->execute([
                     $name, $url, $monitor_path, $description, $check_interval, $notification_emails, $group_id,
                     $notifications_enabled, $email_notifications, $telegram_notifications,
                     $sms_notifications, $webhook_notifications, $notify_on_down, $notify_on_up,
-                    $notification_priority, $site_id, $_SESSION['user_id'], $user_group_id, $is_admin
+                    $notification_priority, $is_public, $site_id, $_SESSION['user_id'], $user_group_id, $is_admin
                 ]);
             } else {
                 throw new Exception('Bu siteyi düzenleme yetkiniz yok');
@@ -262,13 +263,32 @@ include __DIR__ . '/../../includes/layout/header.php';
                         </div>
                         <?php endif; ?>
                         
+                        <!-- Public Görünürlük -->
+                        <hr>
+                        <h6 class="mb-3">🌐 Public Durum Sayfası</h6>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="is_public" name="is_public"
+                                       <?= !empty($site['is_public']) ? 'checked' : '' ?>
+                                       <?= !$can_edit_site ? 'disabled' : '' ?>>
+                                <label class="form-check-label" for="is_public">
+                                    <strong>Public status sayfasında göster</strong>
+                                </label>
+                                <div class="form-text">
+                                    Etkinleştirilirse bu site, giriş gerektirmeyen
+                                    <a href="<?= $base_url ?>status" target="_blank" rel="noopener">/status</a>
+                                    sayfasında herkese açık olarak listelenir.
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Bildirim Ayarları -->
                         <hr>
                         <h6 class="mb-3">🔔 Bildirim Ayarları</h6>
-                        
+
                         <div class="mb-3">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="notifications_enabled" name="notifications_enabled" 
+                                <input class="form-check-input" type="checkbox" id="notifications_enabled" name="notifications_enabled"
                                        <?= ($site['notifications_enabled'] ?? 1) ? 'checked' : '' ?>
                                        <?= !$can_edit_site ? 'disabled' : '' ?>>
                                 <label class="form-check-label" for="notifications_enabled">

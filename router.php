@@ -24,6 +24,9 @@ $routes = [
     'login'     => 'pages/auth/login.php',
     'register'  => 'pages/auth/register.php',
     'logout'    => 'pages/auth/logout.php',
+
+    // Public durum sayfası (giriş gerektirmez)
+    'status'    => 'pages/status.php',
     
     // Dashboard
     'dashboard' => 'pages/dashboard/index.php',

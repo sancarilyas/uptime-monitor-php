@@ -194,7 +194,7 @@ include __DIR__ . '/../../includes/layout/header.php';
                                 required
                                 autocomplete="new-password"
                             >
-                            <button type="button" class="password-toggle" onclick="togglePassword('password', 'toggleIcon1')">
+                            <button type="button" class="password-toggle" onclick="togglePassword('password', 'toggleIcon1')" aria-label="Şifreyi göster veya gizle">
                                 <i class="fas fa-eye" id="toggleIcon1"></i>
                             </button>
                         </div>
@@ -216,7 +216,7 @@ include __DIR__ . '/../../includes/layout/header.php';
                                 required
                                 autocomplete="new-password"
                             >
-                            <button type="button" class="password-toggle" onclick="togglePassword('confirm_password', 'toggleIcon2')">
+                            <button type="button" class="password-toggle" onclick="togglePassword('confirm_password', 'toggleIcon2')" aria-label="Şifre tekrarını göster veya gizle">
                                 <i class="fas fa-eye" id="toggleIcon2"></i>
                             </button>
                         </div>

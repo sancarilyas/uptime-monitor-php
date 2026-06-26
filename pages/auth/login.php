@@ -172,8 +172,8 @@ include __DIR__ . '/../../includes/layout/header.php';
                                 required
                                 autocomplete="current-password"
                             >
-                            <button type="button" class="password-toggle" onclick="togglePassword()">
-                                <i class="fas fa-eye" id="toggleIcon"></i>
+                            <button type="button" class="password-toggle" onclick="togglePassword()" aria-label="Şifreyi göster veya gizle">
+                                <i class="fas fa-eye" id="toggleIcon" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>

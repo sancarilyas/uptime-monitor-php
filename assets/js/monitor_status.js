@@ -134,7 +134,7 @@ window.monitorStatus = {
         if (container) {
             container.insertAdjacentHTML('afterbegin', alertHtml);
         } else {
-            alert(message);
+            showInfo('Bilgi', message);
         }
     }
 };

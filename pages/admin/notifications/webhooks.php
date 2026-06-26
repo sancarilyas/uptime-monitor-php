@@ -369,14 +369,14 @@ function testWebhook(webhookId) {
         })
         .then(data => {
             if (data.success) {
-                alert('✅ Test webhook başarıyla gönderildi!\n\nHTTP Code: ' + data.http_code);
+                showSuccess('Başarılı', '✅ Test webhook başarıyla gönderildi!\n\nHTTP Code: ' + data.http_code);
             } else {
-                alert('❌ Webhook gönderilirken hata oluştu:\n\n' + data.message);
+                showError('Hata', '❌ Webhook gönderilirken hata oluştu:\n\n' + data.message);
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('❌ Bağlantı hatası: ' + error.message);
+            showError('Hata', '❌ Bağlantı hatası: ' + error.message);
         })
         .finally(() => {
             // Butonu eski haline getir

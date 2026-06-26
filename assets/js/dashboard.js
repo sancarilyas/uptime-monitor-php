@@ -863,7 +863,7 @@ function editSite(site) {
             const searchInput = document.getElementById('siteSearchInput');
             if (searchInput) {
                 searchInput.value = '';
-                searchSites('');
+                applyDashboardFilters();
             }
         } catch (error) {
             console.error('clearSiteSearch hatası:', error);
@@ -888,7 +888,7 @@ function editSite(site) {
                         clearTimeout(searchTimeout);
                         searchTimeout = setTimeout(() => {
                             console.log('Arama yapılıyor:', this.value);
-                            searchSites(this.value);
+                            applyDashboardFilters();
                         }, 300); // 300ms bekle
                     } catch (error) {
                         console.error('Arama input hatası:', error);
@@ -901,7 +901,7 @@ function editSite(site) {
                         if (e.key === 'Enter') {
                             clearTimeout(searchTimeout);
                             console.log('Enter ile arama:', this.value);
-                            searchSites(this.value);
+                            applyDashboardFilters();
                         }
                     } catch (error) {
                         console.error('Enter arama hatası:', error);
@@ -1013,7 +1013,10 @@ function editSite(site) {
         btn.disabled = true;
         text.textContent = 'Kontrol Ediliyor...';
         spinner.style.display = 'inline-block';
-        
+
+        // Yükleme durumu: kartlara/satırlara shimmer uygula
+        document.querySelectorAll('.site-card, .dashboard-row').forEach(el => el.classList.add('is-refreshing'));
+
         // AJAX isteği gönder
         fetch(base_url + 'pages/ajax/check_all_sites.php', {
             method: 'POST',
@@ -1038,6 +1041,7 @@ function editSite(site) {
                     location.reload();
                 }, 2000);
             } else {
+                document.querySelectorAll('.site-card, .dashboard-row').forEach(el => el.classList.remove('is-refreshing'));
                 showToast('error', 'Hata', data.message);
             }
         })
@@ -1046,7 +1050,8 @@ function editSite(site) {
             btn.disabled = false;
             text.textContent = 'Tüm Siteleri Kontrol Et';
             spinner.style.display = 'none';
-            
+            document.querySelectorAll('.site-card, .dashboard-row').forEach(el => el.classList.remove('is-refreshing'));
+
             showToast('error', 'Hata', 'Bağlantı hatası oluştu.');
         });
     }
@@ -1090,3 +1095,90 @@ function editSite(site) {
         document.body.appendChild(container);
         return container;
     }
+
+    // ============================================================
+    // BİRLEŞİK DASHBOARD FİLTRELERİ (arama + durum + grup)
+    // ============================================================
+    let currentStatusFilter = 'all';
+
+    function applyDashboardFilters() {
+        try {
+            const searchInput = document.getElementById('siteSearchInput');
+            const groupSelect = document.getElementById('groupFilter');
+            const term = (searchInput?.value || '').toLowerCase().trim();
+            const groupFilter = groupSelect ? groupSelect.value : 'all';
+
+            const items = document.querySelectorAll('.site-filter-item');
+            let visible = 0;
+            const total = items.length;
+
+            items.forEach(item => {
+                const status = item.getAttribute('data-status') || '';
+                const group = item.getAttribute('data-group') || '';
+                const text = item.textContent.toLowerCase();
+
+                const statusMatch = currentStatusFilter === 'all' || status === currentStatusFilter;
+                const groupMatch = groupFilter === 'all' || group === groupFilter;
+                const textMatch = !term || text.includes(term);
+
+                if (statusMatch && groupMatch && textMatch) {
+                    item.style.display = '';
+                    visible++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            updateFilterResultInfo(visible, total, term, groupFilter);
+        } catch (error) {
+            console.error('applyDashboardFilters hatası:', error);
+        }
+    }
+
+    function updateFilterResultInfo(visible, total, term, groupFilter) {
+        const info = document.getElementById('searchResultInfo');
+        const text = document.getElementById('searchResultText');
+        const clearBtn = document.getElementById('clearSearch');
+        if (!info || !text) return;
+
+        const filtersActive = term || currentStatusFilter !== 'all' || (groupFilter && groupFilter !== 'all');
+        if (clearBtn) clearBtn.style.display = term ? 'inline-block' : 'none';
+
+        if (!filtersActive) {
+            info.style.display = 'none';
+            return;
+        }
+
+        // Toplam görünür sayısı (her site hem kart hem tabloda olduğu için 2 kapsayıcı olabilir)
+        const cardItems = document.querySelectorAll('#cardViewContent .site-filter-item');
+        const denom = cardItems.length || total;
+        const shown = Array.from(cardItems).filter(c => c.style.display !== 'none').length || visible;
+
+        if (shown === 0) {
+            text.innerHTML = `Filtreye uyan site bulunamadı (${denom} siteden 0 eşleşme)`;
+            info.className = 'alert alert-warning mb-3';
+        } else {
+            text.innerHTML = `${shown} site gösteriliyor (${denom} siteden)`;
+            info.className = 'alert alert-info mb-3';
+        }
+        info.style.display = 'block';
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Durum filtresi çipleri
+        document.querySelectorAll('.filter-chip[data-status-filter]').forEach(chip => {
+            chip.addEventListener('click', function () {
+                currentStatusFilter = this.getAttribute('data-status-filter');
+                document.querySelectorAll('.filter-chip[data-status-filter]').forEach(c => {
+                    c.classList.toggle('active', c === this);
+                });
+                applyDashboardFilters();
+            });
+        });
+
+        // Grup filtresi
+        const groupSelect = document.getElementById('groupFilter');
+        if (groupSelect) {
+            groupSelect.addEventListener('change', applyDashboardFilters);
+        }
+    });

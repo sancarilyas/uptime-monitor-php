@@ -22,10 +22,10 @@ function deleteRule(ruleId) {
         .then(data => {
             if (data.success) {
                 // Başarı mesajı göster
-                alert('Bildirim kuralı başarıyla silindi!');
+                showSuccess('Başarılı', 'Bildirim kuralı başarıyla silindi!');
                 location.reload();
             } else {
-                alert('Hata: ' + data.message);
+                showError('Hata', 'Hata: ' + data.message);
                 // Butonu eski haline getir
                 button.disabled = false;
                 button.innerHTML = '<i class="fas fa-trash"></i>';
@@ -33,7 +33,7 @@ function deleteRule(ruleId) {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Bir hata oluştu: ' + error.message);
+            showError('Hata', 'Bir hata oluştu: ' + error.message);
             // Butonu eski haline getir
             button.disabled = false;
             button.innerHTML = '<i class="fas fa-trash"></i>';

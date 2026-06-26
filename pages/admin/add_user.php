@@ -240,7 +240,7 @@ document.getElementById('addUserForm').addEventListener('submit', function(e) {
     const confirmPassword = document.getElementById('confirm_password').value;
     
     if (password !== confirmPassword) {
-        alert('<?= __('passwords_not_match') ?? 'Şifreler eşleşmiyor' ?>');
+        showWarning('Uyarı', '<?= __('passwords_not_match') ?? 'Şifreler eşleşmiyor' ?>');
         return false;
     }
     
