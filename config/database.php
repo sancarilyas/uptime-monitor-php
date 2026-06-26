@@ -15,6 +15,10 @@
 // config/env.php, önce public_html dışına, sonra proje köküne bakar.
 require_once __DIR__ . '/env.php';
 
+// Yeni App\* sınıflarını (Service/Repository/Core) otomatik yükle.
+// Geriye dönük uyumludur: eski global fonksiyonlar etkilenmez.
+require_once __DIR__ . '/../app/Core/Autoload.php';
+
 // --- Kimlik bilgileri (.env'den) ---
 $db_host = env('DB_HOST', 'localhost');
 $db_name = env('DB_NAME', 'uptime_monitor');
