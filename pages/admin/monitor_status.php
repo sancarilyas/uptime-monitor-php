@@ -23,11 +23,11 @@ if (file_exists($pid_file)) {
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
             // Windows
             $output = shell_exec("tasklist /FI \"PID eq $daemon_pid\" 2>NUL");
-            $daemon_running = strpos($output, $daemon_pid) !== false;
+            $daemon_running = strpos($output ?? '', $daemon_pid) !== false;
         } else {
             // Linux/Unix
             $result = shell_exec("ps -p $daemon_pid -o pid= 2>/dev/null");
-            $daemon_running = !empty(trim($result));
+            $daemon_running = !empty(trim($result ?? ''));
         }
     }
 }
