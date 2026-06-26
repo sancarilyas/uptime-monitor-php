@@ -13,25 +13,15 @@ if (!$site_id) {
     exit;
 }
 
-// Kullanıcının grup bilgisini al
-$user_group_id = null;
-$stmt = $pdo->prepare("SELECT group_id FROM users WHERE id = ?");
-$stmt->execute([$_SESSION['user_id']]);
-$user = $stmt->fetch();
-if ($user) {
-    $user_group_id = $user['group_id'];
-}
+// SiteService (erişim kontrolü + veri çekme tek yerde)
+$siteService = new \App\Service\SiteService(
+    new \App\Repository\SiteRepository($pdo),
+    new \App\Repository\UserRepository($pdo),
+    new \App\Repository\UptimeLogRepository($pdo)
+);
 
 // Site bilgilerini al - Grup bazlı erişim kontrolü
-$stmt = $pdo->prepare("
-    SELECT s.*, 
-           g.name as group_name
-    FROM sites s 
-    LEFT JOIN `groups` g ON s.group_id = g.id
-    WHERE s.id = ? AND (s.user_id = ? OR (s.group_id IS NOT NULL AND s.group_id = ?))
-");
-$stmt->execute([$site_id, $_SESSION['user_id'], $user_group_id]);
-$site = $stmt->fetch();
+$site = $siteService->getAccessibleSite((int)$site_id, $_SESSION['user_id']);
 
 if (!$site) {
     header('Location: ' . $base_url . 'dashboard');
@@ -45,7 +35,6 @@ $time_range = $_GET['range'] ?? '24h';
 $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 $per_page = isset($_GET['per_page']) ? (int)$_GET['per_page'] : 15;
 $per_page = in_array($per_page, [15, 30, 50, 100]) ? $per_page : 15; // Sadece 15, 30, 50, 100 kabul et
-$offset = ($page - 1) * $per_page;
 
 switch ($time_range) {
     case '1h':
@@ -73,54 +62,18 @@ switch ($time_range) {
         $interval_text = 'Son 24 Saat';
 }
 
-// Toplam log sayısını al
-$stmt = $pdo->prepare("
-    SELECT COUNT(*) as total
-    FROM uptime_logs 
-    WHERE site_id = ? 
-    AND timestamp >= DATE_SUB(NOW(), INTERVAL ? HOUR)
-");
-$stmt->execute([$site_id, $hours]);
-$total_logs = $stmt->fetch()['total'];
-$total_pages = ceil($total_logs / $per_page);
+// Loglar + istatistikler + sayfalama meta'sı (tek çağrı)
+$detailData = $siteService->getSiteDetailData((int)$site_id, $hours, $page, $per_page);
 
-// Sayfalanmış logları al
-$stmt = $pdo->prepare("
-    SELECT 
-        status,
-        response_time,
-        timestamp
-    FROM uptime_logs 
-    WHERE site_id = :site_id 
-    AND timestamp >= DATE_SUB(NOW(), INTERVAL :hours HOUR)
-    ORDER BY timestamp DESC
-    LIMIT :limit OFFSET :offset
-");
-$stmt->bindValue(':site_id', $site_id, PDO::PARAM_INT);
-$stmt->bindValue(':hours', $hours, PDO::PARAM_INT);
-$stmt->bindValue(':limit', $per_page, PDO::PARAM_INT);
-$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-$stmt->execute();
-$logs = $stmt->fetchAll();
+$logs = $detailData['logs'];
+$stats = $detailData['stats'];
+$total_logs = $detailData['total_logs'];
+$total_pages = $detailData['total_pages'];
 
-// İstatistikler (TÜM verilerden hesapla, sadece sayfadakilerden değil)
-$stmt = $pdo->prepare("
-    SELECT 
-        COUNT(*) as total_checks,
-        SUM(CASE WHEN status = 'up' THEN 1 ELSE 0 END) as up_count,
-        SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END) as down_count,
-        AVG(CASE WHEN status = 'up' THEN response_time ELSE NULL END) as avg_response_time
-    FROM uptime_logs 
-    WHERE site_id = ? 
-    AND timestamp >= DATE_SUB(NOW(), INTERVAL ? HOUR)
-");
-$stmt->execute([$site_id, $hours]);
-$stats = $stmt->fetch();
-
-$total_checks = $stats['total_checks'] ?: 0;
-$up_count = $stats['up_count'] ?: 0;
-$down_count = $stats['down_count'] ?: 0;
-$avg_response_time = $stats['avg_response_time'] ? round($stats['avg_response_time']) : 0;
+$total_checks = $stats['total_checks'];
+$up_count = $stats['up_count'];
+$down_count = $stats['down_count'];
+$avg_response_time = $stats['avg_response_time'];
 $uptime_percent = $total_checks > 0 ? ($up_count / $total_checks) * 100 : 0;
 
 // Kesinti periyotları hesaplama (DÜZELTME: En eski log'dan başla)
