@@ -1,0 +1,612 @@
+ 
+    /* Body ve HTML tam alan kaplaması */
+    html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow-x: hidden;
+    }
+    
+    /* Light Mode Background */
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background-attachment: fixed;
+    }
+    
+    /* Dark Mode Background */
+    body.dark-mode {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    }
+    
+    /* Ana Container */
+    .enterprise-login-wrapper {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .enterprise-login-wrapper::before {
+        content: '';
+        position: absolute;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+        background-size: 50px 50px;
+        animation: backgroundMove 20s linear infinite;
+    }
+    
+    @keyframes backgroundMove {
+        0% { transform: translate(0, 0); }
+        100% { transform: translate(50px, 50px); }
+    }
+    
+    .enterprise-login-container {
+        display: flex;
+        max-width: 1200px;
+        width: 100%;
+        min-height: 600px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        overflow: hidden;
+        position: relative;
+        z-index: 1;
+        animation: slideUp 0.6s ease-out;
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Sol Taraf - Branding */
+    .enterprise-login-left {
+        flex: 1;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 60px 50px;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .enterprise-login-left::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: pulse 15s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 0.5; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+    }
+    
+    .branding-content {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .logo-section {
+        margin-bottom: 50px;
+        animation: fadeInDown 0.8s ease-out;
+    }
+    
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .logo-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    
+    .logo-icon i {
+        font-size: 40px;
+        color: white;
+    }
+    
+    .brand-name {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        letter-spacing: -0.5px;
+    }
+    
+    .brand-tagline {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        font-weight: 300;
+    }
+    
+    .features-section {
+        margin-bottom: 40px;
+    }
+    
+    .feature-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 30px;
+        animation: fadeInLeft 0.8s ease-out;
+        animation-fill-mode: both;
+    }
+    
+    .feature-item:nth-child(1) { animation-delay: 0.2s; }
+    .feature-item:nth-child(2) { animation-delay: 0.4s; }
+    .feature-item:nth-child(3) { animation-delay: 0.6s; }
+    
+    @keyframes fadeInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .feature-icon {
+        width: 50px;
+        height: 50px;
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 20px;
+        flex-shrink: 0;
+    }
+    
+    .feature-icon i {
+        font-size: 24px;
+    }
+    
+    .feature-text h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    
+    .feature-text p {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        margin: 0;
+        line-height: 1.4;
+    }
+    
+    .trust-badges {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        animation: fadeInUp 1s ease-out;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .badge-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 25px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .badge-item i {
+        font-size: 16px;
+    }
+    
+    /* Sağ Taraf - Form */
+    .enterprise-login-right {
+        flex: 1;
+        padding: 60px 50px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background: #ffffff;
+        transition: background-color 0.3s ease;
+    }
+    
+    /* Dark Mode - Sağ Taraf */
+    .dark-mode .enterprise-login-right {
+        background: #1e1e2f;
+    }
+    
+    .login-form-container {
+        max-width: 400px;
+        width: 100%;
+        margin: 0 auto;
+    }
+    
+    .form-header {
+        margin-bottom: 40px;
+        animation: fadeIn 0.8s ease-out;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    .form-header h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1a202c;
+        margin-bottom: 8px;
+        transition: color 0.3s ease;
+    }
+    
+    .dark-mode .form-header h2 {
+        color: #f7fafc;
+    }
+    
+    .form-header p {
+        color: #718096;
+        font-size: 1rem;
+        transition: color 0.3s ease;
+    }
+    
+    .dark-mode .form-header p {
+        color: #a0aec0;
+    }
+    
+    .modern-alert {
+        border: none;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 24px;
+        background: #fee;
+        animation: shake 0.5s ease-in-out;
+    }
+    
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        75% { transform: translateX(10px); }
+    }
+    
+    .alert-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #c53030;
+    }
+    
+    .alert-content i {
+        font-size: 20px;
+    }
+    
+    .enterprise-form {
+        animation: fadeIn 1s ease-out;
+    }
+    
+    .form-group {
+        margin-bottom: 24px;
+    }
+    
+    .form-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 8px;
+        transition: color 0.3s ease;
+    }
+    
+    .dark-mode .form-label {
+        color: #e2e8f0;
+    }
+    
+    .form-label i {
+        color: #667eea;
+        font-size: 14px;
+    }
+    
+    .dark-mode .form-label i {
+        color: #8b9aef;
+    }
+    
+    .modern-input {
+        width: 100%;
+        padding: 14px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: #f7fafc;
+        color: #2d3748;
+    }
+    
+    .dark-mode .modern-input {
+        background: #2d3748;
+        border-color: #4a5568;
+        color: #f7fafc;
+    }
+    
+    .modern-input:focus {
+        outline: none;
+        border-color: #667eea;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .dark-mode .modern-input:focus {
+        background: #1a202c;
+        border-color: #8b9aef;
+        box-shadow: 0 0 0 4px rgba(139, 154, 239, 0.2);
+    }
+    
+    .modern-input::placeholder {
+        color: #a0aec0;
+    }
+    
+    .dark-mode .modern-input::placeholder {
+        color: #718096;
+    }
+    
+    .password-input-wrapper {
+        position: relative;
+    }
+    
+    .password-toggle {
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #a0aec0;
+        cursor: pointer;
+        padding: 5px;
+        transition: color 0.3s ease;
+    }
+    
+    .password-toggle:hover {
+        color: #667eea;
+    }
+    
+    .form-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        font-size: 0.9rem;
+    }
+    
+    .form-check-input:checked {
+        background-color: #667eea;
+        border-color: #667eea;
+    }
+    
+    .forgot-link {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+    
+    .forgot-link:hover {
+        color: #764ba2;
+    }
+    
+    .enterprise-login-btn {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        margin-bottom: 24px;
+    }
+    
+    .enterprise-login-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+    }
+    
+    .enterprise-login-btn:active {
+        transform: translateY(0);
+    }
+    
+    .form-footer {
+        text-align: center;
+    }
+    
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 24px 0;
+        color: #a0aec0;
+        font-size: 0.9rem;
+    }
+    
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .divider span {
+        padding: 0 16px;
+    }
+    
+    .register-link {
+        color: #718096;
+        font-size: 0.95rem;
+        margin-bottom: 20px;
+        transition: color 0.3s ease;
+    }
+    
+    .dark-mode .register-link {
+        color: #a0aec0;
+    }
+    
+    .register-link a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+    
+    .dark-mode .register-link a {
+        color: #8b9aef;
+    }
+    
+    .register-link a:hover {
+        color: #764ba2;
+    }
+    
+    .dark-mode .register-link a:hover {
+        color: #a5b4fc;
+    }
+    
+    .language-selector-wrapper {
+        display: inline-block;
+    }
+    
+    .login-footer {
+        text-align: center;
+        padding-top: 20px;
+        border-top: 1px solid #e2e8f0;
+        color: #a0aec0;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+    }
+    
+    .dark-mode .login-footer {
+        border-top-color: #4a5568;
+        color: #718096;
+    }
+    
+    .form-check-label {
+        color: #4a5568;
+        transition: color 0.3s ease;
+    }
+    
+    .dark-mode .form-check-label {
+        color: #cbd5e0;
+    }
+    
+    .forgot-link {
+        transition: color 0.3s ease;
+    }
+    
+    .dark-mode .forgot-link {
+        color: #8b9aef;
+    }
+    
+    .dark-mode .forgot-link:hover {
+        color: #a5b4fc;
+    }
+    
+    .divider {
+        transition: color 0.3s ease;
+    }
+    
+    .dark-mode .divider {
+        color: #718096;
+    }
+    
+    .divider::before,
+    .divider::after {
+        transition: border-color 0.3s ease;
+    }
+    
+    .dark-mode .divider::before,
+    .dark-mode .divider::after {
+        border-bottom-color: #4a5568;
+    }
+    
+    /* Responsive */
+    @media (max-width: 992px) {
+        .enterprise-login-left {
+            display: none;
+        }
+        
+        .enterprise-login-right {
+            padding: 40px 30px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .enterprise-login-wrapper {
+            padding: 10px;
+        }
+        
+        .enterprise-login-right {
+            padding: 30px 20px;
+        }
+        
+        .form-header h2 {
+            font-size: 1.5rem;
+        }
+        
+        .trust-badges {
+            justify-content: center;
+        }
+        
+        .badge-item {
+            font-size: 0.75rem;
+            padding: 8px 14px;
+        }
+    }
+ 

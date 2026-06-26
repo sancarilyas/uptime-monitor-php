@@ -1,0 +1,793 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Uptime Monitor API",
+    "description": "Uptime Monitor sistemi için RESTful API. Web sitelerinin uptime durumunu izleme, raporlama ve bildirim gönderme işlemleri için kullanılır.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "API Desteği",
+      "email": "admin@example.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api",
+      "description": "Production server"
+    }
+  ],
+  "security": [
+    {
+      "sessionAuth": []
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "API Bilgileri",
+        "description": "API hakkında genel bilgileri döndürür",
+        "operationId": "getApiInfo",
+        "tags": ["Genel"],
+        "responses": {
+          "200": {
+            "description": "Başarılı yanıt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Uptime Monitor API"
+                    },
+                    "version": {
+                      "type": "string",
+                      "example": "1.0.0"
+                    },
+                    "endpoints": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sites": {
+      "get": {
+        "summary": "Tüm Siteleri Getir",
+        "description": "Kullanıcının tüm sitelerini ve grup sitelerini döndürür",
+        "operationId": "getAllSites",
+        "tags": ["Siteler"],
+        "responses": {
+          "200": {
+            "description": "Başarılı yanıt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Site"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Yeni Site Ekle",
+        "description": "Yeni bir site ekler ve izlemeye başlar",
+        "operationId": "addSite",
+        "tags": ["Siteler"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiteCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Site başarıyla eklendi",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Site başarıyla eklendi"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "example": 2
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "Yeni Site"
+                        },
+                        "url": {
+                          "type": "string",
+                          "example": "https://newsite.com"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      }
+    },
+    "/sites/{id}": {
+      "get": {
+        "summary": "Site Detayları",
+        "description": "Belirli bir site için detaylı bilgileri döndürür",
+        "operationId": "getSiteDetails",
+        "tags": ["Siteler"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Site benzersiz kimliği",
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Başarılı yanıt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/SiteDetail"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        }
+      },
+      "put": {
+        "summary": "Site Güncelle",
+        "description": "Mevcut bir siteyi günceller",
+        "operationId": "updateSite",
+        "tags": ["Siteler"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Site benzersiz kimliği",
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiteUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Site başarıyla güncellendi",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Site başarıyla güncellendi"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Site Sil",
+        "description": "Bir siteyi siler",
+        "operationId": "deleteSite",
+        "tags": ["Siteler"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Site benzersiz kimliği",
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Site başarıyla silindi",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Site başarıyla silindi"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        }
+      }
+    },
+    "/sites/{id}/logs": {
+      "get": {
+        "summary": "Site Logları",
+        "description": "Belirli bir site için uptime loglarını döndürür",
+        "operationId": "getSiteLogs",
+        "tags": ["Siteler"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Site benzersiz kimliği",
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Kayıt sayısı (varsayılan: 50, maksimum: 100)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50,
+              "example": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Başlangıç pozisyonu (varsayılan: 0)",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "example": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Başarılı yanıt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SiteLog"
+                      }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "example": 100
+                    },
+                    "limit": {
+                      "type": "integer",
+                      "example": 50
+                    },
+                    "offset": {
+                      "type": "integer",
+                      "example": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        }
+      }
+    },
+    "/sites/{id}/check": {
+      "post": {
+        "summary": "Manuel Kontrol",
+        "description": "Belirli bir site için manuel uptime kontrolü yapar",
+        "operationId": "manualCheck",
+        "tags": ["Siteler"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Site benzersiz kimliği",
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Kontrol tamamlandı",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Kontrol tamamlandı"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": ["up", "down"],
+                          "example": "up"
+                        },
+                        "response_time": {
+                          "type": "integer",
+                          "example": 250
+                        },
+                        "http_code": {
+                          "type": "integer",
+                          "example": 200
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2024-01-01T12:00:00Z"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "sessionAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "PHPSESSID",
+        "description": "Session tabanlı kimlik doğrulama için PHPSESSID cookie'si gerekir"
+      }
+    },
+    "schemas": {
+      "Site": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Örnek Site"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://example.com"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["active", "inactive"],
+            "example": "active"
+          },
+          "last_status": {
+            "type": "string",
+            "enum": ["up", "down"],
+            "example": "up"
+          },
+          "response_time": {
+            "type": "integer",
+            "example": 250
+          },
+          "group_name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Grup Adı"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-01T12:00:00Z"
+          }
+        }
+      },
+      "SiteDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Örnek Site"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://example.com"
+          },
+          "monitor_path": {
+            "type": "string",
+            "example": "api/health"
+          },
+          "description": {
+            "type": "string",
+            "example": "Site açıklaması"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["active", "inactive"],
+            "example": "active"
+          },
+          "last_status": {
+            "type": "string",
+            "enum": ["up", "down"],
+            "example": "up"
+          },
+          "response_time": {
+            "type": "integer",
+            "example": 250
+          },
+          "group_name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Grup Adı"
+          },
+          "notification_emails": {
+            "type": "string",
+            "example": "admin@example.com"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-01T12:00:00Z"
+          }
+        }
+      },
+      "SiteCreate": {
+        "type": "object",
+        "required": ["name", "url"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Yeni Site",
+            "description": "Site adı"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://newsite.com",
+            "description": "Site URL'si (http/https)"
+          },
+          "monitor_path": {
+            "type": "string",
+            "example": "api/health",
+            "description": "İzlenecek özel yol"
+          },
+          "description": {
+            "type": "string",
+            "example": "Site açıklaması",
+            "description": "Site açıklaması"
+          },
+          "group_id": {
+            "type": "integer",
+            "nullable": true,
+            "example": 1,
+            "description": "Grup ID'si"
+          },
+          "notification_emails": {
+            "type": "string",
+            "example": "admin@example.com",
+            "description": "Bildirim e-postaları (virgülle ayırın)"
+          },
+          "check_interval": {
+            "type": "integer",
+            "minimum": 30,
+            "maximum": 3600,
+            "default": 60,
+            "example": 60,
+            "description": "Kontrol aralığı (saniye)"
+          }
+        }
+      },
+      "SiteUpdate": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Güncellenmiş Site",
+            "description": "Site adı"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://updatedsite.com",
+            "description": "Site URL'si"
+          },
+          "monitor_path": {
+            "type": "string",
+            "example": "api/status",
+            "description": "İzlenecek özel yol"
+          },
+          "description": {
+            "type": "string",
+            "example": "Güncellenmiş açıklama",
+            "description": "Site açıklaması"
+          },
+          "group_id": {
+            "type": "integer",
+            "nullable": true,
+            "example": 1,
+            "description": "Grup ID'si"
+          },
+          "notification_emails": {
+            "type": "string",
+            "example": "admin@example.com",
+            "description": "Bildirim e-postaları"
+          },
+          "check_interval": {
+            "type": "integer",
+            "minimum": 30,
+            "maximum": 3600,
+            "example": 120,
+            "description": "Kontrol aralığı (saniye)"
+          }
+        }
+      },
+      "SiteLog": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "site_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": ["up", "down"],
+            "example": "up"
+          },
+          "response_time": {
+            "type": "integer",
+            "example": 250
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-01T12:00:00Z"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "message": {
+            "type": "string",
+            "example": "Hata mesajı"
+          },
+          "error_code": {
+            "type": "string",
+            "example": "ERROR_CODE"
+          }
+        }
+      }
+    },
+    "responses": {
+      "UnauthorizedError": {
+        "description": "Kimlik doğrulama gerekli",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "success": false,
+              "message": "Kimlik doğrulama gerekli",
+              "error_code": "UNAUTHORIZED"
+            }
+          }
+        }
+      },
+      "ForbiddenError": {
+        "description": "Erişim yetkisi yok",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "success": false,
+              "message": "Bu siteyi düzenleme yetkiniz yok",
+              "error_code": "FORBIDDEN"
+            }
+          }
+        }
+      },
+      "NotFoundError": {
+        "description": "Kaynak bulunamadı",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "success": false,
+              "message": "Site bulunamadı",
+              "error_code": "NOT_FOUND"
+            }
+          }
+        }
+      },
+      "ValidationError": {
+        "description": "Veri doğrulama hatası",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "success": false,
+              "message": "name alanı gerekli",
+              "error_code": "VALIDATION_ERROR"
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Genel",
+      "description": "Genel API işlemleri"
+    },
+    {
+      "name": "Siteler",
+      "description": "Site yönetimi işlemleri"
+    }
+  ]
+}

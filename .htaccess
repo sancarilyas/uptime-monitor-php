@@ -1,0 +1,27 @@
+# Uptime Monitor - Apache Ayarları
+
+# Güvenlik başlıkları (mod_headers aktifse)
+# Header always set X-Content-Type-Options nosniff
+# Header always set X-Frame-Options DENY
+# Header always set X-XSS-Protection "1; mode=block"
+# Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+# URL Rewriting - Router sistemi için
+RewriteEngine On
+RewriteBase /
+
+# API için özel kurallar (API isteklerini direkt yönlendir)
+RewriteRule ^api/(.*)$ api/index.php [QSA,L]
+
+# Dosya ve klasör yoksa router'a yönlendir
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# HTTPS yönlendirmesi (opsiyonel)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Hata sayfaları
+ErrorDocument 404 /index.php
+ErrorDocument 403 /index.php

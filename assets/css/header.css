@@ -1,0 +1,926 @@
+:root {
+    --primary-color: #3b82f6;
+    --primary-dark: #2563eb;
+    --secondary-color: #64748b;
+    --success-color: #10b981;
+    --success-light: #d1fae5;
+    --danger-color: #ef4444;
+    --danger-light: #fee2e2;
+    --warning-color: #f59e0b;
+    --warning-light: #fef3c7;
+    --info-color: #06b6d4;
+    --info-light: #cffafe;
+    --light-bg: #f8fafc;
+    --card-bg: #ffffff;
+    --border-color: #e2e8f0;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+}
+
+* {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    color: var(--text-primary);
+    line-height: 1.6;
+    transition: all 0.3s ease;
+}
+
+/* Gece modu için */
+body.dark-mode {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: #e2e8f0;
+}
+
+.main-container {
+    background: transparent;
+    margin: 0 auto;
+    max-width: 1200px;
+    min-height: 100vh;
+}
+
+/* Ana container'ları beyaz yap (navbar hariç) */
+.container:not(.navbar .container) {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    backdrop-filter: blur(10px);
+    margin-top: 20px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+/* Gece modunda container'lar */
+body.dark-mode .container:not(.navbar .container) {
+    background: rgba(45, 55, 72, 0.95);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    color: #e2e8f0;
+}
+
+.navbar {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border-bottom: none;
+    padding: 0.75rem 1rem;
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25);
+    backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 1000;
+}
+
+/* Navbar içindeki container'ı şeffaf yap */
+.navbar .container {
+    background: transparent !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding: 0 !important;
+}
+
+/* Gece modunda navbar */
+body.dark-mode .navbar {
+    background: linear-gradient(135deg, #1a202c, #2d3748);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: white !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-text {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.95) !important;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.nav-link:hover, .nav-link.active {
+    color: white !important;
+    background: rgba(255, 255, 255, 0.15);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+.card {
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+}
+
+/* Gece modunda kartlar */
+body.dark-mode .card {
+    background: rgba(45, 55, 72, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.form-control {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+}
+
+/* Modern Alert Styles */
+.alert {
+    border: none;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.alert::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: currentColor;
+    opacity: 0.3;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    color: #065f46;
+    border-left: 4px solid #10b981;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #92400e;
+    border-left: 4px solid #f59e0b;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #cffafe, #a5f3fc);
+    color: #155e75;
+    border-left: 4px solid #06b6d4;
+}
+
+.alert i {
+    margin-right: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.alert .btn-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.alert .btn-close:hover {
+    opacity: 1;
+}
+
+/* Toast Notification Styles */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 400px;
+    width: auto;
+    height: auto;
+    pointer-events: none;
+}
+
+.toast-container .toast {
+    pointer-events: auto;
+}
+
+.toast {
+    background: white;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    margin-bottom: 1rem;
+    overflow: hidden;
+    position: relative;
+    backdrop-filter: blur(10px);
+    width: 100%;
+    max-width: 400px;
+    min-width: 300px;
+}
+
+.toast-header {
+    background: transparent;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+}
+
+.toast-body {
+    padding: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.toast-success {
+    border-left: 4px solid #10b981;
+}
+
+.toast-success .toast-header {
+    color: #065f46;
+}
+
+.toast-danger {
+    border-left: 4px solid #ef4444;
+}
+
+.toast-danger .toast-header {
+    color: #991b1b;
+}
+
+.toast-warning {
+    border-left: 4px solid #f59e0b;
+}
+
+.toast-warning .toast-header {
+    color: #92400e;
+}
+
+.toast-info {
+    border-left: 4px solid #06b6d4;
+}
+
+.toast-info .toast-header {
+    color: #155e75;
+}
+
+/* Animation for toasts */
+.toast.show {
+    animation: slideInRight 0.3s ease-out;
+}
+
+.toast.hide {
+    animation: slideOutRight 0.3s ease-in;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* Mobile responsive toasts */
+@media (max-width: 768px) {
+    .toast-container {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        width: auto;
+    }
+    
+    .toast {
+        min-width: auto;
+        max-width: none;
+        width: 100%;
+    }
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.language-selector .dropdown-toggle {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.language-selector .dropdown-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.language-selector .dropdown-menu {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 768px) {
+    .main-container {
+        max-width: 100%;
+        margin: 0;
+    }
+    
+    .navbar {
+        padding: 0.5rem 1rem;
+    }
+}
+
+/* Z-Index Fixes for Dropdown Menus */
+.site-card {
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s ease;
+}
+
+.site-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    z-index: 10;
+}
+
+.site-card .dropdown-menu {
+    z-index: 1050 !important;
+    position: absolute !important;
+}
+
+.site-card .dropdown-toggle {
+    position: relative;
+    z-index: 1051 !important;
+}
+
+/* Card hover effects with proper z-index */
+.card {
+    position: relative;
+    z-index: 1;
+}
+
+.card:hover {
+    z-index: 5;
+}
+
+/* Dropdown menu positioning */
+.dropdown-menu {
+    z-index: 1050 !important;
+    position: absolute !important;
+}
+
+/* Ensure all interactive elements have proper z-index */
+.btn-group .dropdown-menu {
+    z-index: 1050 !important;
+}
+
+.nav-item .dropdown-menu {
+    z-index: 1050 !important;
+}
+
+/* Site card title layout fixes for long names */
+.site-card .card-title {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 0.5rem;
+}
+
+.site-card .card-title-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    min-height: 2rem;
+}
+
+.site-card .dropdown {
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+/* Ensure dropdown button stays in place */
+.site-card .dropdown-toggle {
+    flex-shrink: 0;
+    min-width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+.site-card .card-title {
+    font-size: 1rem;
+    margin-right: 0.25rem;
+}
+
+.site-card .dropdown-toggle {
+    min-width: 1.75rem;
+    height: 1.75rem;
+    padding: 0.25rem;
+}
+
+.site-card .card-title-container {
+    min-height: 1.75rem;
+}
+}
+
+/* Tablo görünümü stilleri */
+.up-row {
+border-left: 4px solid #28a745;
+}
+
+.down-row {
+border-left: 4px solid #dc3545;
+}
+
+.up-row:hover {
+background-color: rgba(40, 167, 69, 0.05);
+}
+
+.down-row:hover {
+background-color: rgba(220, 53, 69, 0.05);
+}
+
+.mini-progress {
+position: relative;
+overflow: hidden;
+}
+
+.mini-progress-fill {
+position: relative;
+transition: width 0.3s ease;
+}
+
+.mini-progress-fill::after {
+content: '';
+position: absolute;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+0% { transform: translateX(-100%); }
+100% { transform: translateX(100%); }
+}
+
+/* Tablo responsive */
+@media (max-width: 768px) {
+.table-responsive {
+    font-size: 0.875rem;
+}
+
+.mini-progress {
+    width: 40px !important;
+}
+}
+
+/* Modal z-index fix */
+.modal {
+    z-index: 1060 !important;
+}
+
+.modal-backdrop {
+    z-index: 1055 !important;
+}
+
+/* Bootstrap dropdown override */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-menu.show {
+    z-index: 1050 !important;
+}
+
+/* Dashboard tablo stilleri */
+.dashboard-table {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.dashboard-table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+    background: #f8f9fa;
+    padding: 12px 8px;
+    font-size: 0.875rem;
+}
+
+.dashboard-table td {
+    padding: 12px 8px;
+    vertical-align: middle;
+    border-top: 1px solid #dee2e6;
+}
+
+.dashboard-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.dashboard-table tbody tr:hover {
+    background-color: rgba(0,123,255,0.05);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.dashboard-table tbody tr.up {
+    border-left: 4px solid #28a745;
+}
+
+.dashboard-table tbody tr.down {
+    border-left: 4px solid #dc3545;
+}
+
+/* Mini progress bar */
+.mini-progress {
+    width: 60px;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.mini-progress .progress-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+/* Dark mode için mini progress bar */
+body.dark-mode .mini-progress {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Global tablo tarih-saat yazıları için dark mode */
+body.dark-mode .table td .text-muted,
+body.dark-mode .table td small,
+body.dark-mode .table td .small,
+body.dark-mode .table td .text-secondary,
+body.dark-mode .dashboard-table td .text-muted,
+body.dark-mode .dashboard-table td small,
+body.dark-mode .dashboard-table td .small {
+    color: #e2e8f0 !important;
+}
+
+/* Global widget'lar için dark mode */
+body.dark-mode .stat-card {
+    background: rgba(45, 55, 72, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+}
+
+body.dark-mode .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4) !important;
+}
+
+body.dark-mode .stat-icon {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .stats-number {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .stats-label {
+    color: #a0aec0 !important;
+}
+
+body.dark-mode .stats-number.text-danger {
+    color: #ef4444 !important;
+}
+
+/* Global widget simgelerini renklendir */
+.stat-icon .fa-globe {
+    color: #3b82f6 !important; /* Mavi - Toplam Site */
+}
+
+.stat-icon .fa-check-circle {
+    color: #10b981 !important; /* Yeşil - Aktif Site */
+}
+
+.stat-icon .fa-exclamation-triangle {
+    color: #ef4444 !important; /* Kırmızı - Kesintili Siteler */
+}
+
+.stat-icon .fa-clock {
+    color: #f59e0b !important; /* Turuncu - Son Kontrol */
+}
+
+.stat-icon .fa-users {
+    color: #8b5cf6 !important; /* Mor - Kullanıcılar */
+}
+
+/* Global başlık ve açıklama metinleri için dark mode */
+body.dark-mode .section-title {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .text-muted {
+    color: #a0aec0 !important;
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6 {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode h1 i,
+body.dark-mode h2 i,
+body.dark-mode h3 i,
+body.dark-mode h4 i,
+body.dark-mode h5 i,
+body.dark-mode h6 i {
+    color: #e2e8f0 !important;
+}
+
+/* Global modal'lar için dark mode */
+body.dark-mode .modal-content {
+    background: rgba(45, 55, 72, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .modal-header {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .modal-title {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .modal-title i {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .modal-body {
+    background: rgba(45, 55, 72, 0.95) !important;
+}
+
+body.dark-mode .modal-footer {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .modal .form-label {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .modal .form-control {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .modal .form-control:focus {
+    background: rgba(30, 41, 59, 0.9) !important;
+    border-color: #60a5fa !important;
+    color: #e2e8f0 !important;
+    box-shadow: 0 0 0 0.2rem rgba(96, 165, 250, 0.25) !important;
+}
+
+body.dark-mode .modal .form-control::placeholder {
+    color: #a0aec0 !important;
+}
+
+body.dark-mode .modal .form-text {
+    color: #a0aec0 !important;
+}
+
+body.dark-mode .modal .btn-close {
+    filter: invert(1) !important;
+}
+
+body.dark-mode .modal .btn-secondary {
+    background: rgba(55, 65, 82, 0.8) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .modal .btn-secondary:hover {
+    background: rgba(55, 65, 82, 1) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .modal .btn-primary {
+    background: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode .modal .btn-primary:hover {
+    background: #2563eb !important;
+    border-color: #2563eb !important;
+    color: #ffffff !important;
+}
+
+/* Görünüm değiştirme butonları */
+.btn-group .btn-check:checked + .btn {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+
+/* Responsive dashboard tablo */
+@media (max-width: 768px) {
+    .dashboard-table th, .dashboard-table td {
+        padding: 8px 4px;
+        font-size: 0.8rem;
+    }
+    
+    .mini-progress {
+        width: 40px;
+        height: 6px;
+    }
+    
+    .dashboard-table th:nth-child(2), .dashboard-table td:nth-child(2) {
+        max-width: 150px;
+    }
+}
+
+/* Gece modu için genel stiller */
+body.dark-mode .btn-primary {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(37, 99, 235, 0.8));
+    border-color: rgba(59, 130, 246, 0.8);
+}
+
+body.dark-mode .btn-primary:hover {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 1), rgba(37, 99, 235, 1));
+    border-color: rgba(59, 130, 246, 1);
+}
+
+body.dark-mode .btn-outline-secondary {
+    color: #e2e8f0;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+body.dark-mode .btn-outline-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: #e2e8f0;
+}
+
+body.dark-mode .form-control {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #e2e8f0;
+}
+
+body.dark-mode .form-control:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(59, 130, 246, 0.5);
+    color: #e2e8f0;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+}
+
+body.dark-mode .form-control::placeholder {
+    color: rgba(226, 232, 240, 0.6);
+}
+
+body.dark-mode .dropdown-menu {
+    background: rgba(45, 55, 72, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+}
+
+body.dark-mode .dropdown-item {
+    color: #e2e8f0;
+}
+
+body.dark-mode .dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+}
+
+body.dark-mode .table {
+    color: #e2e8f0;
+}
+
+body.dark-mode .table th {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .table td {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Tema değiştirme butonu */
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50px;
+    width: 50px;
+    height: 50px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #374151;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+body.dark-mode .theme-toggle {
+    background: rgba(45, 55, 72, 0.9);
+    color: #e2e8f0;
+}

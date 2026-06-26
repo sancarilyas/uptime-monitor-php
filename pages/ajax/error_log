@@ -1,0 +1,22 @@
+[01-Oct-2025 21:18:42 Europe/Istanbul] sendEmailNotification çağrıldı - Site: https://sahdijital.com, Emails: sancarilyas@gmail.com, Manual: HAYIR
+[01-Oct-2025 21:18:42 Europe/Istanbul] Email gönderiliyor - Konu: Uptime Monitor - https://sahdijital.com Kesinti, Alıcılar: sancarilyas@gmail.com
+[01-Oct-2025 21:18:43 Europe/Istanbul] Email gönderim sonucu (sancarilyas@gmail.com): BAŞARILI
+[01-Oct-2025 21:18:43 Europe/Istanbul] Email gönderim özeti - Başarılı: 1, Başarısız: 0
+[01-Oct-2025 21:24:15 Europe/Istanbul] sendEmailNotification çağrıldı - Site: https://sahdijital.com, Emails: sancarilyas@gmail.com, Manual: HAYIR
+[01-Oct-2025 21:24:15 Europe/Istanbul] Email gönderiliyor - Konu: Uptime Monitor - https://sahdijital.com Çalışıyor, Alıcılar: sancarilyas@gmail.com
+[01-Oct-2025 21:24:17 Europe/Istanbul] Email gönderim sonucu (sancarilyas@gmail.com): BAŞARILI
+[01-Oct-2025 21:24:17 Europe/Istanbul] Email gönderim özeti - Başarılı: 1, Başarısız: 0
+[02-Oct-2025 09:28:47 Europe/Istanbul] PHP Notice:  Undefined index: HTTP_HOST in /home/u676600629/domains/uptime.projedene.com/public_html/config/database.php on line 16
+[02-Oct-2025 09:28:47 Europe/Istanbul] PHP Notice:  Undefined variable: db_host in /home/u676600629/domains/uptime.projedene.com/public_html/config/database.php on line 36
+[02-Oct-2025 09:43:27 Europe/Istanbul] PHP Notice:  Undefined index: HTTP_HOST in /home/u676600629/domains/uptime.projedene.com/public_html/config/database.php on line 16
+[02-Oct-2025 09:43:27 Europe/Istanbul] PHP Notice:  Undefined variable: db_host in /home/u676600629/domains/uptime.projedene.com/public_html/config/database.php on line 36
+[03-Oct-2025 12:00:50 Europe/Istanbul] PHP Notice:  Undefined index: HTTP_HOST in /home/u676600629/domains/uptime.projedene.com/public_html/config/database.php on line 16
+[03-Oct-2025 12:00:50 Europe/Istanbul] PHP Notice:  Undefined variable: db_host in /home/u676600629/domains/uptime.projedene.com/public_html/config/database.php on line 36
+[03-Oct-2025 12:42:02 Europe/Istanbul] PHP Notice:  Undefined index: HTTP_HOST in /home/u676600629/domains/uptime.projedene.com/public_html/config/database.php on line 16
+[03-Oct-2025 12:42:02 Europe/Istanbul] PHP Notice:  Undefined variable: db_host in /home/u676600629/domains/uptime.projedene.com/public_html/config/database.php on line 36
+[03-Oct-2025 12:48:58 Europe/Istanbul] PHP Notice:  Undefined index: HTTP_HOST in /home/u676600629/domains/uptime.projedene.com/public_html/config/database.php on line 16
+[03-Oct-2025 12:48:58 Europe/Istanbul] PHP Notice:  Undefined variable: db_host in /home/u676600629/domains/uptime.projedene.com/public_html/config/database.php on line 36
+[03-Oct-2025 13:15:43 Europe/Istanbul] PHP Notice:  Undefined index: HTTP_HOST in /home/u676600629/domains/uptime.projedene.com/public_html/config/database.php on line 16
+[03-Oct-2025 13:15:43 Europe/Istanbul] PHP Notice:  Undefined variable: db_host in /home/u676600629/domains/uptime.projedene.com/public_html/config/database.php on line 36
+[03-Oct-2025 14:08:57 Europe/Istanbul] PHP Notice:  Undefined index: HTTP_HOST in /home/u676600629/domains/uptime.projedene.com/public_html/config/database.php on line 16
+[03-Oct-2025 14:08:57 Europe/Istanbul] PHP Notice:  Undefined variable: db_host in /home/u676600629/domains/uptime.projedene.com/public_html/config/database.php on line 36

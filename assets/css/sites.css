@@ -1,0 +1,1020 @@
+ 
+/* Down olan siteler için özel stil */
+.site-card.down {
+    border-left: 4px solid #dc3545;
+    background: linear-gradient(135deg, #fff5f5, #ffffff);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.15);
+    position: relative;
+}
+
+.site-card.down::before {
+    content: '⚠️';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 1.2rem;
+    z-index: 1;
+}
+
+.site-card.down .card-title {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.site-card.up {
+    border-left: 4px solid #28a745;
+    background: linear-gradient(135deg, #f8fff9, #ffffff);
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 0.5rem;
+}
+
+.status-indicator.up {
+    background-color: #28a745;
+    box-shadow: 0 0 6px rgba(40, 167, 69, 0.5);
+}
+
+.status-indicator.down {
+    background-color: #dc3545;
+    box-shadow: 0 0 6px rgba(220, 53, 69, 0.5);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* Tablo görünümü için down satırları */
+.down-row {
+    background: linear-gradient(135deg, #fff5f5, #ffffff);
+    border-left: 4px solid #dc3545;
+}
+
+.down-row:hover {
+    background: linear-gradient(135deg, #ffe6e6, #fff5f5);
+}
+
+.up-row {
+    background: linear-gradient(135deg, #f8fff9, #ffffff);
+    border-left: 4px solid #28a745;
+}
+
+.up-row:hover {
+    background: linear-gradient(135deg, #e6ffe6, #f8fff9);
+}
+
+.down-row td:first-child {
+    font-weight: 600;
+    color: #dc3545;
+}
+
+/* Dark mode için site kartları - Dashboard ile aynı stil */
+body.dark-mode .site-card,
+body.dark-mode .card.site-card {
+    background: rgba(45, 55, 72, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+body.dark-mode .site-card.up,
+body.dark-mode .card.site-card.up {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.2), rgba(45, 55, 72, 0.95)) !important;
+    border-left: 4px solid #28a745 !important;
+}
+
+body.dark-mode .site-card.down,
+body.dark-mode .card.site-card.down {
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.2), rgba(45, 55, 72, 0.95)) !important;
+    border-left: 4px solid #dc3545 !important;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3) !important;
+}
+
+/* Card body için dark mode */
+body.dark-mode .site-card .card-body,
+body.dark-mode .card.site-card .card-body {
+    background: transparent !important;
+    color: #e2e8f0 !important;
+}
+
+/* Gece modunda kart içeriği - Dashboard ile aynı */
+body.dark-mode .site-card .card-title,
+body.dark-mode .site-card .card-text,
+body.dark-mode .site-card .text-muted,
+body.dark-mode .site-card .small,
+body.dark-mode .site-card .badge,
+body.dark-mode .card.site-card .card-title,
+body.dark-mode .card.site-card .card-text,
+body.dark-mode .card.site-card .text-muted,
+body.dark-mode .card.site-card .small,
+body.dark-mode .card.site-card .badge {
+    color: #e2e8f0 !important;
+}
+
+/* Özellikle text-muted için güçlü kural */
+body.dark-mode .site-card .text-muted,
+body.dark-mode .card.site-card .text-muted,
+body.dark-mode .site-card small,
+body.dark-mode .card.site-card small {
+    color: #a0aec0 !important;
+}
+
+body.dark-mode .site-card .text-success,
+body.dark-mode .card.site-card .text-success {
+    color: #10b981 !important;
+}
+
+body.dark-mode .site-card .text-danger,
+body.dark-mode .card.site-card .text-danger {
+    color: #ef4444 !important;
+}
+
+body.dark-mode .site-card .text-info,
+body.dark-mode .card.site-card .text-info {
+    color: #3b82f6 !important;
+}
+
+body.dark-mode .site-card .text-warning,
+body.dark-mode .card.site-card .text-warning {
+    color: #f59e0b !important;
+}
+
+/* Gece modunda kart başlıkları */
+body.dark-mode .site-card .card-title,
+body.dark-mode .card.site-card .card-title {
+    color: #e2e8f0 !important;
+    font-weight: 600;
+}
+
+body.dark-mode .site-card.down .card-title,
+body.dark-mode .card.site-card.down .card-title {
+    color: #ef4444 !important;
+}
+
+/* Gece modunda uptime yüzdeleri */
+body.dark-mode .site-card .fw-bold,
+body.dark-mode .card.site-card .fw-bold {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .site-card .fw-bold.text-success,
+body.dark-mode .card.site-card .fw-bold.text-success {
+    color: #10b981 !important;
+}
+
+body.dark-mode .site-card .fw-bold.text-danger,
+body.dark-mode .card.site-card .fw-bold.text-danger {
+    color: #ef4444 !important;
+}
+
+/* Dark mode için tablo satırları */
+body.dark-mode .down-row {
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.1), rgba(45, 55, 72, 0.95)) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .up-row {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(45, 55, 72, 0.95)) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .down-row td:first-child {
+    color: #ef4444 !important;
+}
+
+/* Sites sayfası tablo tarih-saat yazıları için dark mode */
+body.dark-mode .table td .text-muted,
+body.dark-mode .table td small,
+body.dark-mode .table td .small,
+body.dark-mode .table td .text-secondary {
+    color: #e2e8f0 !important;
+}
+
+/* Sites sayfası tablo görünümü için dark mode */
+body.dark-mode #tableViewContainer .card {
+    background: rgba(45, 55, 72, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode #tableViewContainer .table {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode #tableViewContainer .table th {
+    background: rgba(30, 41, 59, 0.8) !important;
+    color: #e2e8f0 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode #tableViewContainer .table td {
+    background: rgba(45, 55, 72, 0.95) !important;
+    color: #e2e8f0 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode #tableViewContainer .table tbody tr:hover td {
+    background: rgba(55, 65, 82, 0.95) !important;
+}
+
+body.dark-mode #tableViewContainer .table a {
+    color: #60a5fa !important;
+}
+
+body.dark-mode #tableViewContainer .table a:hover {
+    color: #93c5fd !important;
+}
+
+body.dark-mode #tableViewContainer .table strong {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode #tableViewContainer .table .badge {
+    color: #ffffff !important;
+}
+
+body.dark-mode #tableViewContainer .table .text-success {
+    color: #10b981 !important;
+}
+
+body.dark-mode #tableViewContainer .table .text-danger {
+    color: #ef4444 !important;
+}
+
+/* Sites sayfası dropdown menü için dark mode */
+body.dark-mode .dropdown-menu {
+    background: rgba(45, 55, 72, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .dropdown-item {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .dropdown-item:hover {
+    background: rgba(55, 65, 82, 0.95) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .dropdown-item.text-danger {
+    color: #ef4444 !important;
+}
+
+body.dark-mode .dropdown-item.text-danger:hover {
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: #ef4444 !important;
+}
+
+/* Sites sayfası başlık ve açıklama metinleri için dark mode */
+body.dark-mode .section-title {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .text-muted {
+    color: #a0aec0 !important;
+}
+
+body.dark-mode h2 {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode h2 i {
+    color: #e2e8f0 !important;
+}
+
+/* Modal'lar için dark mode */
+body.dark-mode .modal-content {
+    background: rgba(45, 55, 72, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .modal-header {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .modal-title {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .modal-title i {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .modal-body {
+    background: rgba(45, 55, 72, 0.95) !important;
+}
+
+body.dark-mode .modal-footer {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .modal .form-label {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .modal .form-control {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .modal .form-control:focus {
+    background: rgba(30, 41, 59, 0.9) !important;
+    border-color: #60a5fa !important;
+    color: #e2e8f0 !important;
+    box-shadow: 0 0 0 0.2rem rgba(96, 165, 250, 0.25) !important;
+}
+
+body.dark-mode .modal .form-control::placeholder {
+    color: #a0aec0 !important;
+}
+
+body.dark-mode .modal .form-text {
+    color: #a0aec0 !important;
+}
+
+body.dark-mode .modal .btn-close {
+    filter: invert(1) !important;
+}
+
+body.dark-mode .modal .btn-secondary {
+    background: rgba(55, 65, 82, 0.8) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .modal .btn-secondary:hover {
+    background: rgba(55, 65, 82, 1) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .modal .btn-primary {
+    background: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode .modal .btn-primary:hover {
+    background: #2563eb !important;
+    border-color: #2563eb !important;
+    color: #ffffff !important;
+}
+
+/* Dark mode için bildirim ayarları formları */
+body.dark-mode .form-check-input {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+body.dark-mode .form-check-input:checked {
+    background-color: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+}
+
+body.dark-mode .form-check-label {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .form-select {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .form-select:focus {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(59, 130, 246, 0.5) !important;
+    color: #e2e8f0 !important;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25) !important;
+}
+
+body.dark-mode .form-select option {
+    background: rgba(45, 55, 72, 0.95) !important;
+    color: #e2e8f0 !important;
+}
+
+/* Dark mode için alert kutuları */
+body.dark-mode .alert-info {
+    background: rgba(59, 130, 246, 0.1) !important;
+    border: 1px solid rgba(59, 130, 246, 0.2) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .alert-success {
+    background: rgba(16, 185, 129, 0.1) !important;
+    border: 1px solid rgba(16, 185, 129, 0.2) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .alert-danger {
+    background: rgba(239, 68, 68, 0.1) !important;
+    border: 1px solid rgba(239, 68, 68, 0.2) !important;
+    color: #e2e8f0 !important;
+}
+
+/* Dark mode için hr çizgileri */
+body.dark-mode hr {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Dark mode için h6 başlıkları */
+body.dark-mode h6 {
+    color: #e2e8f0 !important;
+}
+
+/* Dark mode için icon renkleri */
+body.dark-mode .text-primary {
+    color: #60a5fa !important;
+}
+
+body.dark-mode .text-info {
+    color: #22d3ee !important;
+}
+
+body.dark-mode .text-success {
+    color: #10b981 !important;
+}
+
+body.dark-mode .text-warning {
+    color: #f59e0b !important;
+}
+
+/* Sites sayfası için özel dark mode kuralları */
+body.dark-mode .container {
+    background: rgba(45, 55, 72, 0.95) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+    color: #e2e8f0 !important;
+}
+
+/* Sites sayfası başlık ve açıklama */
+body.dark-mode .section-title {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .section-title i {
+    color: #60a5fa !important;
+}
+
+body.dark-mode .text-muted {
+    color: #a0aec0 !important;
+}
+
+/* Sites sayfası butonlar */
+body.dark-mode .btn-primary {
+    background: rgba(59, 130, 246, 0.8) !important;
+    border-color: rgba(59, 130, 246, 0.8) !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode .btn-primary:hover {
+    background: rgba(59, 130, 246, 1) !important;
+    border-color: rgba(59, 130, 246, 1) !important;
+}
+
+body.dark-mode .btn-outline-secondary {
+    color: #e2e8f0 !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark-mode .btn-outline-secondary:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    color: #e2e8f0 !important;
+}
+
+/* Sites sayfası form elemanları */
+body.dark-mode .form-control {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .form-control:focus {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(59, 130, 246, 0.5) !important;
+    color: #e2e8f0 !important;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25) !important;
+}
+
+body.dark-mode .form-control::placeholder {
+    color: rgba(226, 232, 240, 0.6) !important;
+}
+
+body.dark-mode .input-group-text {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #e2e8f0 !important;
+}
+
+/* Sites sayfası alert kutuları */
+body.dark-mode .alert-info {
+    background: rgba(59, 130, 246, 0.1) !important;
+    border: 1px solid rgba(59, 130, 246, 0.2) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .alert-success {
+    background: rgba(16, 185, 129, 0.1) !important;
+    border: 1px solid rgba(16, 185, 129, 0.2) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .alert-danger {
+    background: rgba(239, 68, 68, 0.1) !important;
+    border: 1px solid rgba(239, 68, 68, 0.2) !important;
+    color: #e2e8f0 !important;
+}
+
+/* Sites sayfası boş durum kartı */
+body.dark-mode .card.text-center {
+    background: rgba(45, 55, 72, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .card.text-center .text-muted {
+    color: #a0aec0 !important;
+}
+
+body.dark-mode .card.text-center .fas.fa-globe {
+    color: #a0aec0 !important;
+}
+
+/* En güçlü dark mode kuralları - Sites sayfası için */
+body.dark-mode .card {
+    background-color: rgba(45, 55, 72, 0.95) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .card-body {
+    background-color: transparent !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .card .text-muted {
+    color: #a0aec0 !important;
+}
+
+body.dark-mode .card small {
+    color: #a0aec0 !important;
+}
+
+body.dark-mode .card .card-title {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .card .card-text {
+    color: #e2e8f0 !important;
+}
+
+/* Bootstrap card override - Sites sayfası */
+body.dark-mode .card.bg-white {
+    background-color: rgba(45, 55, 72, 0.95) !important;
+}
+
+body.dark-mode .card.text-dark {
+    color: #e2e8f0 !important;
+}
+
+/* Sites sayfası özel kart stilleri */
+body.dark-mode .col-lg-4 .card,
+body.dark-mode .col-md-6 .card {
+    background-color: rgba(45, 55, 72, 0.95) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .col-lg-4 .card .card-body,
+body.dark-mode .col-md-6 .card .card-body {
+    background-color: transparent !important;
+    color: #e2e8f0 !important;
+}
+
+/* Sites sayfası kart içeriği */
+body.dark-mode .col-lg-4 .card .text-muted,
+body.dark-mode .col-md-6 .card .text-muted,
+body.dark-mode .col-lg-4 .card small,
+body.dark-mode .col-md-6 .card small {
+    color: #a0aec0 !important;
+}
+
+body.dark-mode .col-lg-4 .card .card-title,
+body.dark-mode .col-md-6 .card .card-title {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .col-lg-4 .card .fw-bold,
+body.dark-mode .col-md-6 .card .fw-bold {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .col-lg-4 .card .fw-bold.text-success,
+body.dark-mode .col-md-6 .card .fw-bold.text-success {
+    color: #10b981 !important;
+}
+
+body.dark-mode .col-lg-4 .card .fw-bold.text-danger,
+body.dark-mode .col-md-6 .card .fw-bold.text-danger {
+    color: #ef4444 !important;
+}
+
+/* Edit sayfası için özel dark mode kuralları */
+body.dark-mode .breadcrumb {
+    background: rgba(45, 55, 72, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .breadcrumb-item {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .breadcrumb-item a {
+    color: #60a5fa !important;
+}
+
+body.dark-mode .breadcrumb-item.active {
+    color: #a0aec0 !important;
+}
+
+/* Edit sayfası form elemanları */
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .form-control:focus,
+body.dark-mode .form-select:focus {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(59, 130, 246, 0.5) !important;
+    color: #e2e8f0 !important;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25) !important;
+}
+
+body.dark-mode .form-control::placeholder {
+    color: rgba(226, 232, 240, 0.6) !important;
+}
+
+body.dark-mode .form-select option {
+    background: rgba(45, 55, 72, 0.95) !important;
+    color: #e2e8f0 !important;
+}
+
+/* Edit sayfası textarea özel */
+body.dark-mode textarea.form-control {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode textarea.form-control:focus {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(59, 130, 246, 0.5) !important;
+    color: #e2e8f0 !important;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25) !important;
+}
+
+/* Edit sayfası form etiketleri */
+body.dark-mode .form-label {
+    color: #e2e8f0 !important;
+    font-weight: 500;
+}
+
+body.dark-mode .form-text {
+    color: #a0aec0 !important;
+}
+
+/* Edit sayfası checkbox'lar */
+body.dark-mode .form-check-input {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+body.dark-mode .form-check-input:checked {
+    background-color: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+}
+
+body.dark-mode .form-check-label {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .form-check-label strong {
+    color: #e2e8f0 !important;
+}
+
+/* Edit sayfası hr çizgileri */
+body.dark-mode hr {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Edit sayfası h6 başlıkları */
+body.dark-mode h6 {
+    color: #e2e8f0 !important;
+}
+
+/* Edit sayfası icon renkleri */
+body.dark-mode .text-primary {
+    color: #60a5fa !important;
+}
+
+body.dark-mode .text-info {
+    color: #22d3ee !important;
+}
+
+body.dark-mode .text-success {
+    color: #10b981 !important;
+}
+
+body.dark-mode .text-warning {
+    color: #f59e0b !important;
+}
+
+/* Edit sayfası butonlar */
+body.dark-mode .btn-primary {
+    background: rgba(59, 130, 246, 0.8) !important;
+    border-color: rgba(59, 130, 246, 0.8) !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode .btn-primary:hover {
+    background: rgba(59, 130, 246, 1) !important;
+    border-color: rgba(59, 130, 246, 1) !important;
+}
+
+body.dark-mode .btn-secondary {
+    background: rgba(107, 114, 128, 0.8) !important;
+    border-color: rgba(107, 114, 128, 0.8) !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode .btn-secondary:hover {
+    background: rgba(107, 114, 128, 1) !important;
+    border-color: rgba(107, 114, 128, 1) !important;
+}
+
+/* Edit sayfası için ek dark mode düzeltmeleri */
+body.dark-mode .form-control::placeholder {
+    color: rgba(226, 232, 240, 0.8) !important;
+    opacity: 1 !important;
+}
+
+body.dark-mode textarea.form-control::placeholder {
+    color: rgba(226, 232, 240, 0.8) !important;
+    opacity: 1 !important;
+}
+
+/* Form text'leri için daha koyu renk */
+body.dark-mode .form-text {
+    color: #cbd5e1 !important;
+    opacity: 1 !important;
+}
+
+/* Card header ve body için dark mode */
+body.dark-mode .card-header {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .card-header h5 {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .card-header h5 i {
+    color: #60a5fa !important;
+}
+
+/* Section title için dark mode */
+body.dark-mode .section-title {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .section-title i {
+    color: #60a5fa !important;
+}
+
+/* Text muted için daha koyu renk */
+body.dark-mode .text-muted {
+    color: #cbd5e1 !important;
+}
+
+/* Form label'lar için daha belirgin renk */
+body.dark-mode .form-label {
+    color: #f1f5f9 !important;
+    font-weight: 600;
+}
+
+/* Checkbox label'lar için daha belirgin renk */
+body.dark-mode .form-check-label {
+    color: #f1f5f9 !important;
+}
+
+body.dark-mode .form-check-label strong {
+    color: #f1f5f9 !important;
+}
+
+/* H6 başlıkları için daha belirgin renk */
+body.dark-mode h6 {
+    color: #f1f5f9 !important;
+    font-weight: 600;
+}
+
+/* Input focus durumunda daha belirgin */
+body.dark-mode .form-control:focus,
+body.dark-mode .form-select:focus {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(59, 130, 246, 0.8) !important;
+    color: #f1f5f9 !important;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.4) !important;
+}
+
+/* Textarea için özel focus */
+body.dark-mode textarea.form-control:focus {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(59, 130, 246, 0.8) !important;
+    color: #f1f5f9 !important;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.4) !important;
+}
+
+/* Edit sayfası için ekstra dark mode düzeltmeleri */
+body.dark-mode .form-text {
+    color: #e2e8f0 !important;
+    opacity: 1 !important;
+    font-weight: 500 !important;
+}
+
+/* Form elemanları için daha belirgin renkler */
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: #f1f5f9 !important;
+}
+
+body.dark-mode .form-control:focus,
+body.dark-mode .form-select:focus {
+    background: rgba(255, 255, 255, 0.25) !important;
+    border-color: rgba(59, 130, 246, 0.8) !important;
+    color: #f1f5f9 !important;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.4) !important;
+}
+
+/* Textarea için özel stil */
+body.dark-mode textarea.form-control {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: #f1f5f9 !important;
+}
+
+body.dark-mode textarea.form-control:focus {
+    background: rgba(255, 255, 255, 0.25) !important;
+    border-color: rgba(59, 130, 246, 0.8) !important;
+    color: #f1f5f9 !important;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.4) !important;
+}
+
+/* Placeholder metinleri için daha belirgin */
+body.dark-mode .form-control::placeholder,
+body.dark-mode textarea.form-control::placeholder {
+    color: rgba(241, 245, 249, 0.7) !important;
+    opacity: 1 !important;
+    font-weight: 400 !important;
+}
+
+/* Form label'lar için daha belirgin */
+body.dark-mode .form-label {
+    color: #f8fafc !important;
+    font-weight: 700 !important;
+}
+
+/* Card header için daha belirgin */
+body.dark-mode .card-header {
+    background: rgba(30, 41, 59, 0.9) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #f1f5f9 !important;
+}
+
+body.dark-mode .card-header h5 {
+    color: #f1f5f9 !important;
+    font-weight: 600 !important;
+}
+
+body.dark-mode .card-header h5 i {
+    color: #60a5fa !important;
+}
+
+/* Section title için daha belirgin */
+body.dark-mode .section-title {
+    color: #f1f5f9 !important;
+    font-weight: 600 !important;
+}
+
+body.dark-mode .section-title i {
+    color: #60a5fa !important;
+}
+
+/* Text muted için daha belirgin */
+body.dark-mode .text-muted {
+    color: #e2e8f0 !important;
+    font-weight: 500 !important;
+}
+
+/* Edit sayfası için en güçlü dark mode kuralları */
+body.dark-mode .form-text,
+body.dark-mode .form-text.text-muted,
+body.dark-mode .form-text.small,
+body.dark-mode .form-text.text-secondary {
+    color: #f1f5f9 !important;
+    opacity: 1 !important;
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+}
+
+/* Form elemanları için en güçlü kurallar */
+body.dark-mode .form-control,
+body.dark-mode .form-select,
+body.dark-mode input.form-control,
+body.dark-mode select.form-select,
+body.dark-mode textarea.form-control {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: 2px solid rgba(255, 255, 255, 0.4) !important;
+    color: #f8fafc !important;
+    font-weight: 500 !important;
+}
+
+body.dark-mode .form-control:focus,
+body.dark-mode .form-select:focus,
+body.dark-mode input.form-control:focus,
+body.dark-mode select.form-select:focus,
+body.dark-mode textarea.form-control:focus {
+    background: rgba(255, 255, 255, 0.3) !important;
+    border-color: rgba(59, 130, 246, 0.8) !important;
+    color: #f8fafc !important;
+    box-shadow: 0 0 0 0.3rem rgba(59, 130, 246, 0.5) !important;
+}
+
+/* Form label'lar için en güçlü kurallar */
+body.dark-mode .form-label,
+body.dark-mode label.form-label {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 0.95rem !important;
+}
+
+/* Card body içindeki tüm metinler */
+body.dark-mode .card-body .form-text,
+body.dark-mode .card-body .text-muted,
+body.dark-mode .card-body .small,
+body.dark-mode .card-body .text-secondary {
+    color: #f1f5f9 !important;
+    opacity: 1 !important;
+    font-weight: 600 !important;
+}
+
+/* H6 başlıkları için en güçlü kurallar */
+body.dark-mode h6,
+body.dark-mode .card-body h6 {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 1.1rem !important;
+}
+
+/* Select option'ları için */
+body.dark-mode .form-select option {
+    background: rgba(45, 55, 72, 0.95) !important;
+    color: #f1f5f9 !important;
+    font-weight: 500 !important;
+}
+
+/* Placeholder metinleri için en güçlü kurallar */
+body.dark-mode .form-control::placeholder,
+body.dark-mode textarea.form-control::placeholder,
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+    color: rgba(248, 250, 252, 0.8) !important;
+    opacity: 1 !important;
+    font-weight: 500 !important;
+}
+
+/* Container içindeki tüm metinler */
+body.dark-mode .container .form-text,
+body.dark-mode .container .text-muted,
+body.dark-mode .container .small {
+    color: #f1f5f9 !important;
+    opacity: 1 !important;
+    font-weight: 600 !important;
+}
+ 

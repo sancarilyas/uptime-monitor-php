@@ -1,0 +1,746 @@
+/* Dashboard ana arka plan - Soft tasarım */
+body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    transition: all 0.3s ease;
+}
+
+/* Gece modu için */
+body.dark-mode {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+}
+
+/* Container'ları beyaz tutmak ve gölge efektleri */
+.container {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    margin-top: 20px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+/* Gece modunda container */
+body.dark-mode .container {
+    background: rgba(45, 55, 72, 0.95);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    color: #e2e8f0;
+}
+
+/* Gece modunda kartlar - Daha güçlü kurallar */
+body.dark-mode .site-card,
+body.dark-mode .card.site-card {
+    background: rgba(45, 55, 72, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+body.dark-mode .site-card.up,
+body.dark-mode .card.site-card.up {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.2), rgba(45, 55, 72, 0.95)) !important;
+    border-left: 4px solid #28a745 !important;
+}
+
+body.dark-mode .site-card.down,
+body.dark-mode .card.site-card.down {
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.2), rgba(45, 55, 72, 0.95)) !important;
+    border-left: 4px solid #dc3545 !important;
+}
+
+/* Card body için dark mode */
+body.dark-mode .site-card .card-body,
+body.dark-mode .card.site-card .card-body {
+    background: transparent !important;
+    color: #e2e8f0 !important;
+}
+
+/* Gece modunda kart içeriği - Daha spesifik kurallar */
+body.dark-mode .site-card .card-title,
+body.dark-mode .site-card .card-text,
+body.dark-mode .site-card .text-muted,
+body.dark-mode .site-card .small,
+body.dark-mode .site-card .badge,
+body.dark-mode .card.site-card .card-title,
+body.dark-mode .card.site-card .card-text,
+body.dark-mode .card.site-card .text-muted,
+body.dark-mode .card.site-card .small,
+body.dark-mode .card.site-card .badge {
+    color: #e2e8f0 !important;
+}
+
+/* Özellikle text-muted için güçlü kural */
+body.dark-mode .site-card .text-muted,
+body.dark-mode .card.site-card .text-muted,
+body.dark-mode .site-card small,
+body.dark-mode .card.site-card small {
+    color: #a0aec0 !important;
+}
+
+body.dark-mode .site-card .text-success {
+    color: #10b981 !important;
+}
+
+body.dark-mode .site-card .text-danger {
+    color: #ef4444 !important;
+}
+
+body.dark-mode .site-card .text-info {
+    color: #3b82f6 !important;
+}
+
+body.dark-mode .site-card .text-warning {
+    color: #f59e0b !important;
+}
+
+/* Gece modunda kart başlıkları */
+body.dark-mode .site-card .card-title {
+    color: #e2e8f0 !important;
+    font-weight: 600;
+}
+
+body.dark-mode .site-card.down .card-title {
+    color: #ef4444 !important;
+}
+
+/* Gece modunda uptime yüzdeleri */
+body.dark-mode .site-card .fw-bold {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .site-card .fw-bold.text-success {
+    color: #10b981 !important;
+}
+
+body.dark-mode .site-card .fw-bold.text-danger {
+    color: #ef4444 !important;
+}
+
+/* Gece modunda tablo */
+body.dark-mode .dashboard-table {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+}
+
+body.dark-mode .dashboard-table th {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .dashboard-table td {
+    background: rgba(45, 55, 72, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+}
+
+body.dark-mode .dashboard-table tbody tr:hover td {
+    background: rgba(55, 65, 82, 0.95);
+}
+
+body.dark-mode .dashboard-table tbody tr:nth-child(even) td {
+    background: rgba(40, 50, 67, 0.95);
+}
+
+/* Tablo tarih-saat yazıları için dark mode */
+body.dark-mode .dashboard-table td .text-muted,
+body.dark-mode .dashboard-table td small,
+body.dark-mode .dashboard-table td .small {
+    color: #e2e8f0 !important;
+}
+
+/* Tablo görünümündeki progress bar'lar için dark mode */
+body.dark-mode .mini-progress {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .mini-progress .progress-bar {
+    background-color: var(--progress-color) !important;
+}
+
+/* Gece modunda widget'lar */
+body.dark-mode .card {
+    background: rgba(45, 55, 72, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Gece modunda kart içeriği */
+body.dark-mode .card h5,
+body.dark-mode .card h6,
+body.dark-mode .card .card-title,
+body.dark-mode .card .card-text,
+body.dark-mode .card .text-muted,
+body.dark-mode .card .small,
+body.dark-mode .card .badge {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .card .text-success {
+    color: #10b981 !important;
+}
+
+body.dark-mode .card .text-danger {
+    color: #ef4444 !important;
+}
+
+body.dark-mode .card .text-warning {
+    color: #f59e0b !important;
+}
+
+body.dark-mode .card .text-info {
+    color: #3b82f6 !important;
+}
+
+/* Tema değiştirme butonu */
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50px;
+    width: 50px;
+    height: 50px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #374151;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Gece modunda live update indicator */
+body.dark-mode .live-update-indicator {
+    background: rgba(59, 130, 246, 0.2);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #e2e8f0;
+}
+
+body.dark-mode .live-update-indicator .update-close-btn {
+    color: #e2e8f0;
+}
+
+body.dark-mode .live-update-indicator .update-close-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Gece modunda butonlar */
+body.dark-mode .btn-primary {
+    background: rgba(59, 130, 246, 0.8);
+    border-color: rgba(59, 130, 246, 0.8);
+}
+
+body.dark-mode .btn-primary:hover {
+    background: rgba(59, 130, 246, 1);
+    border-color: rgba(59, 130, 246, 1);
+}
+
+body.dark-mode .btn-outline-secondary {
+    color: #e2e8f0;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+body.dark-mode .btn-outline-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: #e2e8f0;
+}
+
+/* Gece modunda form elemanları */
+body.dark-mode .form-control {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #e2e8f0;
+}
+
+body.dark-mode .form-control:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(59, 130, 246, 0.5);
+    color: #e2e8f0;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+}
+
+body.dark-mode .form-control::placeholder {
+    color: rgba(226, 232, 240, 0.6);
+}
+
+/* Sakin Yenileme Bildirimi Tasarımı */
+.live-update-indicator {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.8rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.live-update-indicator.updating {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.2);
+    color: #065f46;
+}
+
+.live-update-indicator.error {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.2);
+    color: #991b1b;
+}
+
+.update-spinner {
+    width: 12px;
+    height: 12px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 0.5rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.update-close-btn {
+    background: none;
+    border: none;
+    color: inherit;
+    opacity: 0.6;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: opacity 0.3s ease;
+}
+
+.update-close-btn:hover {
+    opacity: 1;
+    background: rgba(0,0,0,0.1);
+}
+
+/* Kart düzeni için CSS düzeltmeleri */
+.site-card {
+    transition: all 0.3s ease;
+    min-height: 200px;
+    width: 100%;
+    max-width: 100%;
+    flex: 1;
+    box-sizing: border-box;
+}
+
+/* Bootstrap grid sistemini tamamen koru - CSS müdahalesi yok */
+
+/* Down olan kartlar için özel stil */
+.site-card.down {
+    border-left: 4px solid #dc3545;
+    background: linear-gradient(135deg, #fff5f5, #ffffff);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.15);
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+}
+
+.site-card.down::before {
+    content: '⚠️';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 1.2rem;
+    z-index: 1;
+}
+
+.site-card.down .card-title {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.site-card.up {
+    border-left: 4px solid #28a745;
+    background: linear-gradient(135deg, #f8fff9, #ffffff);
+    width: 100%;
+    max-width: 100%;
+}
+
+.site-card .card-body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.site-card .card-title-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.site-card .card-text {
+    flex-grow: 1;
+}
+
+.site-card .mini-chart-container {
+    margin-top: auto;
+}
+
+/* Kartların yükseklik eşitlemesi - Üstteki CSS ile birleştirildi */
+
+/* Responsive düzenlemeler */
+@media (max-width: 768px) {
+    .site-card {
+        min-height: 180px;
+    }
+    
+    .dashboard-table th, .dashboard-table td {
+        padding: 8px 4px;
+        font-size: 0.8rem;
+    }
+    
+    .mini-progress {
+        width: 40px;
+        height: 6px;
+    }
+    
+    .dashboard-table th:nth-child(2), .dashboard-table td:nth-child(2) {
+        max-width: 150px;
+    }
+}
+
+/* Kartların yeniden düzenlenmesi için geçiş efekti */
+.site-card.reordering {
+    transition: transform 0.3s ease;
+}
+
+/* Bootstrap grid sisteminin yeniden hesaplanması */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -0.5rem;
+}
+
+.row > [class*="col-"] {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem;
+    box-sizing: border-box;
+}
+
+/* Kartların düzenli görünümü için - JavaScript güncellemelerinde korunması için */
+.site-card {
+    transition: all 0.3s ease;
+    min-height: 200px;
+    height: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+}
+
+.site-card .card-body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.site-card .card-title-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.site-card .card-text {
+    flex-grow: 1;
+}
+
+.site-card .mini-chart-container {
+    margin-top: auto;
+}
+
+/* Bootstrap grid sistemini koru - Çakışan CSS kaldırıldı */
+
+/* Widget'lar için düzen */
+.stat-card {
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.stat-icon {
+    font-size: 2rem;
+    color: #6c757d;
+}
+
+.stats-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #495057;
+}
+
+.stats-label {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+/* Dark mode için widget'lar */
+body.dark-mode .stat-card {
+    background: rgba(45, 55, 72, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+}
+
+body.dark-mode .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4) !important;
+}
+
+body.dark-mode .stat-icon {
+    color: #e2e8f0 !important;
+}
+
+/* Widget simgelerini renklendir */
+.stat-icon .fa-globe {
+    color: #3b82f6 !important; /* Mavi - Toplam Site */
+}
+
+.stat-icon .fa-check-circle {
+    color: #10b981 !important; /* Yeşil - Aktif Site */
+}
+
+.stat-icon .fa-exclamation-triangle {
+    color: #ef4444 !important; /* Kırmızı - Kesintili Siteler */
+}
+
+.stat-icon .fa-clock {
+    color: #f59e0b !important; /* Turuncu - Son Kontrol */
+}
+
+body.dark-mode .stats-number {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .stats-label {
+    color: #a0aec0 !important;
+}
+
+body.dark-mode .stats-number.text-danger {
+    color: #ef4444 !important;
+}
+
+/* Tablo görünümü için */
+.view-content {
+    margin-top: 1rem;
+}
+
+.dashboard-table {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.dashboard-table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+    background: #f8f9fa;
+    padding: 12px 8px;
+    font-size: 0.875rem;
+}
+
+.dashboard-table td {
+    padding: 12px 8px;
+    vertical-align: middle;
+    border-top: 1px solid #dee2e6;
+}
+
+.dashboard-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.dashboard-table tbody tr:hover {
+    background-color: rgba(0,123,255,0.05);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.dashboard-table tbody tr.up {
+    border-left: 4px solid #28a745;
+}
+
+.dashboard-table tbody tr.down {
+    border-left: 4px solid #dc3545;
+}
+
+/* Mini progress bar */
+.mini-progress {
+    width: 60px;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.mini-progress .progress-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+/* Dark mode için mini progress bar */
+body.dark-mode .mini-progress {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Dark mode için bildirim ayarları formları */
+body.dark-mode .modal-content {
+    background: rgba(45, 55, 72, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .modal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .modal-header .modal-title {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .modal-header .btn-close {
+    filter: invert(1) !important;
+}
+
+body.dark-mode .modal-body {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .modal-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Dark mode için form elemanları */
+body.dark-mode .form-label {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .form-select {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .form-select:focus {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(59, 130, 246, 0.5) !important;
+    color: #e2e8f0 !important;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25) !important;
+}
+
+body.dark-mode .form-check-label {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .form-check-input {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+body.dark-mode .form-check-input:checked {
+    background-color: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+}
+
+body.dark-mode .form-text {
+    color: rgba(226, 232, 240, 0.6) !important;
+}
+
+/* Dark mode için alert kutuları */
+body.dark-mode .alert-info {
+    background: rgba(59, 130, 246, 0.1) !important;
+    border: 1px solid rgba(59, 130, 246, 0.2) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .alert-success {
+    background: rgba(16, 185, 129, 0.1) !important;
+    border: 1px solid rgba(16, 185, 129, 0.2) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .alert-danger {
+    background: rgba(239, 68, 68, 0.1) !important;
+    border: 1px solid rgba(239, 68, 68, 0.2) !important;
+    color: #e2e8f0 !important;
+}
+
+/* Dark mode için hr çizgileri */
+body.dark-mode hr {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Dark mode için h6 başlıkları */
+body.dark-mode h6 {
+    color: #e2e8f0 !important;
+}
+
+/* En güçlü dark mode kuralları - En sonda olmalı */
+body.dark-mode .card {
+    background-color: rgba(45, 55, 72, 0.95) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .card-body {
+    background-color: transparent !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .card .text-muted {
+    color: #a0aec0 !important;
+}
+
+body.dark-mode .card small {
+    color: #a0aec0 !important;
+}
+
+body.dark-mode .card .card-title {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .card .card-text {
+    color: #e2e8f0 !important;
+}
+
+/* Bootstrap card override */
+body.dark-mode .card.bg-white {
+    background-color: rgba(45, 55, 72, 0.95) !important;
+}
+
+body.dark-mode .card.text-dark {
+    color: #e2e8f0 !important;
+}
