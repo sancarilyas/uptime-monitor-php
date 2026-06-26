@@ -15,26 +15,35 @@ if (isset($_GET['logout'])) {
 $error_message = '';
 $success_message = '';
 
+// SiteService ve bağımlılıkları (tek yerde)
+$siteService = new \App\Service\SiteService(
+    new \App\Repository\SiteRepository($pdo),
+    new \App\Repository\UserRepository($pdo),
+    new \App\Repository\UptimeLogRepository($pdo)
+);
+
+/**
+ * $_POST'tan site bildirim alanlarını toplar (add ve update için ortak).
+ */
+$collectNotificationFields = function (): array {
+    return [
+        'notifications_enabled'    => isset($_POST['notifications_enabled']) ? 1 : 0,
+        'email_notifications'      => isset($_POST['email_notifications']) ? 1 : 0,
+        'telegram_notifications'   => isset($_POST['telegram_notifications']) ? 1 : 0,
+        'sms_notifications'        => isset($_POST['sms_notifications']) ? 1 : 0,
+        'webhook_notifications'    => isset($_POST['webhook_notifications']) ? 1 : 0,
+        'notify_on_down'           => isset($_POST['notify_on_down']) ? 1 : 0,
+        'notify_on_up'             => isset($_POST['notify_on_up']) ? 1 : 0,
+        'notification_priority'    => $_POST['notification_priority'] ?? 'medium',
+    ];
+};
+
 // Site ekleme işlemi
 if ($_POST['action'] ?? '' === 'add_site') {
     verifyCsrf();
     $url = trim($_POST['url'] ?? '');
     $name = trim($_POST['name'] ?? '');
-    $description = trim($_POST['description'] ?? '');
-    $notification_emails = trim($_POST['notification_emails'] ?? '');
-    $monitor_path = trim($_POST['monitor_path'] ?? '');
-    $group_id = $_POST['group_id'] ?? null;
-    
-    // Bildirim ayarları
-    $notifications_enabled = isset($_POST['notifications_enabled']) ? 1 : 0;
-    $email_notifications = isset($_POST['email_notifications']) ? 1 : 0;
-    $telegram_notifications = isset($_POST['telegram_notifications']) ? 1 : 0;
-    $sms_notifications = isset($_POST['sms_notifications']) ? 1 : 0;
-    $webhook_notifications = isset($_POST['webhook_notifications']) ? 1 : 0;
-    $notify_on_down = isset($_POST['notify_on_down']) ? 1 : 0;
-    $notify_on_up = isset($_POST['notify_on_up']) ? 1 : 0;
-    $notification_priority = $_POST['notification_priority'] ?? 'medium';
-    
+
     if (empty($url) || empty($name)) {
         $error_message = __('site_name_required');
     } else {
@@ -42,22 +51,19 @@ if ($_POST['action'] ?? '' === 'add_site') {
         if (!$validated_url) {
             $error_message = __('valid_url_required');
         } else {
-            $stmt = $pdo->prepare("
-                INSERT INTO sites 
-                (user_id, group_id, url, monitor_path, name, description, notification_emails, 
-                 notifications_enabled, email_notifications, telegram_notifications, 
-                 sms_notifications, webhook_notifications, notify_on_down, notify_on_up, 
-                 notification_priority, created_at) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-            ");
-            if ($stmt->execute([
-                $_SESSION['user_id'], $group_id, $validated_url, $monitor_path, $name, $description, $notification_emails,
-                $notifications_enabled, $email_notifications, $telegram_notifications,
-                $sms_notifications, $webhook_notifications, $notify_on_down, $notify_on_up,
-                $notification_priority
-            ])) {
+            try {
+                $siteService->addSite(array_merge([
+                    'user_id'             => $_SESSION['user_id'],
+                    'group_id'            => $_POST['group_id'] ?? null,
+                    'url'                 => $validated_url,
+                    'monitor_path'        => trim($_POST['monitor_path'] ?? ''),
+                    'name'                => $name,
+                    'description'         => trim($_POST['description'] ?? ''),
+                    'notification_emails' => trim($_POST['notification_emails'] ?? ''),
+                ], $collectNotificationFields()));
                 $success_message = __('site_added');
-            } else {
+            } catch (\Exception $e) {
+                error_log('add_site hatası: ' . $e->getMessage());
                 $error_message = __('database_error');
             }
         }
@@ -67,11 +73,10 @@ if ($_POST['action'] ?? '' === 'add_site') {
 // Site silme işlemi
 if ($_POST['action'] ?? '' === 'delete_site') {
     verifyCsrf();
-    $site_id = $_POST['site_id'] ?? 0;
+    $site_id = (int)($_POST['site_id'] ?? 0);
 
     if ($site_id) {
-        $stmt = $pdo->prepare("DELETE FROM sites WHERE id = ? AND user_id = ?");
-        if ($stmt->execute([$site_id, $_SESSION['user_id']])) {
+        if ($siteService->deleteSiteByOwner($site_id, $_SESSION['user_id'])) {
             $success_message = __('site_deleted');
         } else {
             $error_message = __('database_error');
@@ -82,23 +87,10 @@ if ($_POST['action'] ?? '' === 'delete_site') {
 // Site güncelleme işlemi
 if ($_POST['action'] ?? '' === 'update_site') {
     verifyCsrf();
-    $site_id = $_POST['site_id'] ?? 0;
+    $site_id = (int)($_POST['site_id'] ?? 0);
     $url = trim($_POST['url'] ?? '');
     $name = trim($_POST['name'] ?? '');
-    $description = trim($_POST['description'] ?? '');
-    $notification_emails = trim($_POST['notification_emails'] ?? '');
-    $monitor_path = trim($_POST['monitor_path'] ?? '');
-    
-    // Bildirim ayarları
-    $notifications_enabled = isset($_POST['notifications_enabled']) ? 1 : 0;
-    $email_notifications = isset($_POST['email_notifications']) ? 1 : 0;
-    $telegram_notifications = isset($_POST['telegram_notifications']) ? 1 : 0;
-    $sms_notifications = isset($_POST['sms_notifications']) ? 1 : 0;
-    $webhook_notifications = isset($_POST['webhook_notifications']) ? 1 : 0;
-    $notify_on_down = isset($_POST['notify_on_down']) ? 1 : 0;
-    $notify_on_up = isset($_POST['notify_on_up']) ? 1 : 0;
-    $notification_priority = $_POST['notification_priority'] ?? 'medium';
-    
+
     if (empty($url) || empty($name)) {
         $error_message = __('site_name_required');
     } else {
@@ -106,53 +98,22 @@ if ($_POST['action'] ?? '' === 'update_site') {
         if (!$validated_url) {
             $error_message = __('valid_url_required');
         } else {
-            $stmt = $pdo->prepare("
-                UPDATE sites SET 
-                url = ?, monitor_path = ?, name = ?, description = ?, notification_emails = ?,
-                notifications_enabled = ?, email_notifications = ?, telegram_notifications = ?,
-                sms_notifications = ?, webhook_notifications = ?, notify_on_down = ?, notify_on_up = ?,
-                notification_priority = ?
-                WHERE id = ? AND user_id = ?
-            ");
-            if ($stmt->execute([
-                $validated_url, $monitor_path, $name, $description, $notification_emails,
-                $notifications_enabled, $email_notifications, $telegram_notifications,
-                $sms_notifications, $webhook_notifications, $notify_on_down, $notify_on_up,
-                $notification_priority, $site_id, $_SESSION['user_id']
-            ])) {
-                $success_message = __('site_updated');
-            } else {
-                $error_message = __('database_error');
-            }
+            $ok = $siteService->updateSiteByOwner(array_merge([
+                'url'                 => $validated_url,
+                'monitor_path'        => trim($_POST['monitor_path'] ?? ''),
+                'name'                => $name,
+                'description'         => trim($_POST['description'] ?? ''),
+                'notification_emails' => trim($_POST['notification_emails'] ?? ''),
+            ], $collectNotificationFields()), $site_id, $_SESSION['user_id']);
+
+            $ok ? ($success_message = __('site_updated')) : ($error_message = __('database_error'));
         }
     }
 }
 
-// Kullanıcının sitelerini al - Grup bazlı erişim kontrolü
-$user_group_id = null;
-$stmt = $pdo->prepare("SELECT group_id FROM users WHERE id = ?");
-$stmt->execute([$_SESSION['user_id']]);
-$user = $stmt->fetch();
-if ($user) {
-    $user_group_id = $user['group_id'];
-}
-
-$stmt = $pdo->prepare("
-    SELECT s.*, 
-           g.name as group_name
-    FROM sites s 
-    LEFT JOIN `groups` g ON s.group_id = g.id
-    WHERE (s.user_id = ? OR (s.group_id IS NOT NULL AND s.group_id = ?))
-    ORDER BY 
-        CASE 
-            WHEN s.last_status = 'down' THEN 0 
-            WHEN s.last_status = 'up' THEN 1 
-            ELSE 2 
-        END, 
-        s.created_at DESC
-");
-$stmt->execute([$_SESSION['user_id'], $user_group_id]);
-$sites = $stmt->fetchAll();
+// Kullanıcının sitelerini al - Grup bazlı erişim kontrolü (SiteService)
+$user_group_id = (new \App\Repository\UserRepository($pdo))->getGroupId($_SESSION['user_id']);
+$sites = $siteService->getVisibleSites($_SESSION['user_id']);
 
 // İstatistikleri hesapla
 $total_sites = count($sites);
@@ -589,10 +550,10 @@ include __DIR__ . '/../../includes/layout/header.php';
                         <label for="group_id" class="form-label"><?= __('group') ?></label>
                         <select class="form-select" id="group_id" name="group_id">
                             <option value=""><?= __('no_group') ?? 'Grup seçiniz' ?></option>
-                            <?php 
-                            $stmt = $pdo->prepare("SELECT * FROM `groups` WHERE id = ?");
-                            $stmt->execute([$user_group_id]);
-                            $user_group = $stmt->fetch();
+                            <?php
+                            $user_group = $user_group_id
+                                ? (new \App\Repository\GroupRepository($pdo))->findById($user_group_id)
+                                : null;
                             if ($user_group): ?>
                                 <option value="<?= $user_group['id'] ?>" selected><?= htmlspecialchars($user_group['name']) ?></option>
                             <?php endif; ?>
