@@ -14,12 +14,21 @@ $success_message = '';
 
 // Kayıt işlemi
 if (isset($_POST['action']) && $_POST['action'] === 'register') {
+    verifyCsrf();
+
     $email = trim($_POST['email'] ?? '');
     $password = trim($_POST['password'] ?? '');
     $confirm_password = trim($_POST['confirm_password'] ?? '');
-    
-    if (empty($email) || empty($password) || empty($confirm_password)) {
+
+    // Kötüye kullanım koruması: IP başına saatte 10 kayıt denemesi
+    $rl = rateLimitHit('register:' . clientIp(), 10, 3600, 3600);
+
+    if (!$rl['allowed']) {
+        $error_message = 'Çok fazla kayıt denemesi. Lütfen daha sonra tekrar deneyin.';
+    } elseif (empty($email) || empty($password) || empty($confirm_password)) {
         $error_message = __('required_fields');
+    } elseif (strlen($password) < 8) {
+        $error_message = __('password_hint') ?? 'Şifre en az 8 karakter olmalıdır';
     } elseif ($password !== $confirm_password) {
         $error_message = __('password_mismatch');
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -150,6 +159,7 @@ include __DIR__ . '/../../includes/layout/header.php';
                 
                 <?php if (!$success_message): ?>
                 <form method="POST" class="enterprise-form">
+                    <?= csrfField() ?>
                     <input type="hidden" name="action" value="register">
                     
                     <div class="form-group">

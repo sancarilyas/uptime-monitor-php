@@ -17,6 +17,7 @@ $success_message = '';
 
 // Site ekleme işlemi
 if ($_POST['action'] ?? '' === 'add_site') {
+    verifyCsrf();
     $url = trim($_POST['url'] ?? '');
     $name = trim($_POST['name'] ?? '');
     $description = trim($_POST['description'] ?? '');
@@ -65,8 +66,9 @@ if ($_POST['action'] ?? '' === 'add_site') {
 
 // Site silme işlemi
 if ($_POST['action'] ?? '' === 'delete_site') {
+    verifyCsrf();
     $site_id = $_POST['site_id'] ?? 0;
-    
+
     if ($site_id) {
         $stmt = $pdo->prepare("DELETE FROM sites WHERE id = ? AND user_id = ?");
         if ($stmt->execute([$site_id, $_SESSION['user_id']])) {
@@ -79,6 +81,7 @@ if ($_POST['action'] ?? '' === 'delete_site') {
 
 // Site güncelleme işlemi
 if ($_POST['action'] ?? '' === 'update_site') {
+    verifyCsrf();
     $site_id = $_POST['site_id'] ?? 0;
     $url = trim($_POST['url'] ?? '');
     $name = trim($_POST['name'] ?? '');
@@ -493,6 +496,7 @@ include __DIR__ . '/../../includes/layout/header.php';
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST">
+                <?= csrfField() ?>
                 <div class="modal-body">
                     <input type="hidden" name="action" value="add_site">
                     
@@ -784,6 +788,7 @@ include __DIR__ . '/../../includes/layout/header.php';
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= __('cancel') ?></button>
                 <form method="POST" style="display: inline;">
+                    <?= csrfField() ?>
                     <input type="hidden" name="action" value="delete_site">
                     <input type="hidden" name="site_id" id="delete_site_id">
                     <button type="submit" class="btn btn-danger"><?= __('delete') ?></button>

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/functions.php';
 
 // JSON response header
 header('Content-Type: application/json');
@@ -33,25 +34,39 @@ try {
 
 // Login - Token al
 function login($pdo) {
+    // Brute-force koruması: IP başına 15 dk içinde 10 başarısız deneme
+    $rl_key = 'apilogin:' . clientIp();
+    $rl = rateLimitHit($rl_key, 10, 900, 900);
+    if (!$rl['allowed']) {
+        http_response_code(429);
+        header('Retry-After: ' . $rl['retry_after']);
+        echo json_encode([
+            'success' => false,
+            'message' => 'Çok fazla giriş denemesi. Lütfen ' . ceil($rl['retry_after'] / 60) . ' dakika sonra tekrar deneyin.',
+            'error_code' => 'RATE_LIMITED'
+        ]);
+        return;
+    }
+
     $input = json_decode(file_get_contents('php://input'), true);
-    
+
     if (!$input) {
         throw new Exception('Geçersiz JSON verisi');
     }
-    
+
     // Gerekli alanları kontrol et
     if (empty($input['email']) || empty($input['password'])) {
         throw new Exception('Email ve şifre gerekli');
     }
-    
+
     $email = trim($input['email']);
     $password = trim($input['password']);
-    
+
     // Kullanıcıyı bul
     $stmt = $pdo->prepare("SELECT id, email, password_hash, role, group_id, first_name, last_name FROM users WHERE email = ?");
     $stmt->execute([$email]);
     $user = $stmt->fetch();
-    
+
     if (!$user || !password_verify($password, $user['password_hash'])) {
         http_response_code(401);
         echo json_encode([
@@ -61,6 +76,9 @@ function login($pdo) {
         ]);
         return;
     }
+
+    // Başarılı giriş — oran sınırlama sayacını sıfırla
+    rateLimitReset($rl_key);
     
     // Token oluştur
     $token = bin2hex(random_bytes(32));

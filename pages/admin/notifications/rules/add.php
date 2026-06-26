@@ -11,6 +11,7 @@ $success_message = '';
 
 // Form gönderildi mi kontrol et
 if ($_POST['action'] ?? '' === 'add_rule') {
+    verifyCsrf();
     $event_type = $_POST['event_type'] ?? '';
     $site_id = $_POST['site_id'] ?? null;
     $priority = $_POST['priority'] ?? 'medium';
@@ -95,6 +96,7 @@ include dirname(__DIR__, 4) . '/includes/layout/header.php';
                 </div>
                 <div class="card-body">
                     <form method="POST">
+<?= csrfField() ?>
                         <input type="hidden" name="action" value="add_rule">
                         
                         <div class="row">

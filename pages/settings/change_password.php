@@ -10,6 +10,7 @@ $success_message = '';
 
 // Şifre değiştirme işlemi
 if (isset($_POST['action']) && $_POST['action'] === 'change_password') {
+    verifyCsrf();
     $current_password = trim($_POST['current_password'] ?? '');
     $new_password = trim($_POST['new_password'] ?? '');
     $confirm_password = trim($_POST['confirm_password'] ?? '');
@@ -82,6 +83,7 @@ include __DIR__ . '/../../includes/layout/header.php';
                 </div>
                 <div class="card-body">
                     <form method="POST" id="changePasswordForm">
+                        <?= csrfField() ?>
                         <input type="hidden" name="action" value="change_password">
                         
                         <div class="mb-3">

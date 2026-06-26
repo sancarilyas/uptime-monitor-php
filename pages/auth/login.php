@@ -13,21 +13,33 @@ $error_message = '';
 
 // Giriş işlemi
 if (isset($_POST['action']) && $_POST['action'] === 'login') {
+    verifyCsrf();
+
     $email = trim($_POST['email'] ?? '');
     $password = trim($_POST['password'] ?? '');
-    
-    if (empty($email) || empty($password)) {
+
+    // Brute-force koruması: IP başına 15 dk içinde 5 başarısız deneme, sonra 15 dk blok
+    $rl_key = 'login:' . clientIp();
+    $rl = rateLimitHit($rl_key, 5, 900, 900);
+
+    if (!$rl['allowed']) {
+        $error_message = 'Çok fazla başarısız giriş denemesi. Lütfen '
+            . ceil($rl['retry_after'] / 60) . ' dakika sonra tekrar deneyin.';
+    } elseif (empty($email) || empty($password)) {
         $error_message = __('required_fields');
     } else {
         $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
-        
+
         if ($user && !empty($user['password_hash']) && password_verify($password, $user['password_hash'])) {
+            // Başarılı giriş — oturum sabitleme (session fixation) önlemi + sayaç sıfırlama
+            rateLimitReset($rl_key);
+            session_regenerate_id(true);
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['user_email'] = $user['email'];
             $_SESSION['user_role'] = $user['role'];
-            
+
             header('Location: ' . $base_url . 'dashboard');
             exit;
         } else {
@@ -126,6 +138,7 @@ include __DIR__ . '/../../includes/layout/header.php';
                 <?php endif; ?>
                 
                 <form method="POST" class="enterprise-form">
+                    <?= csrfField() ?>
                     <input type="hidden" name="action" value="login">
                     
                     <div class="form-group">

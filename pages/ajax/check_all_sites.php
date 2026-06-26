@@ -9,11 +9,16 @@ require_once __DIR__ . '/../../includes/functions.php';
 header('Content-Type: application/json');
 
 // Oturum kontrolü
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['success' => false, 'message' => 'Oturum gerekli']);
     exit;
 }
+
+// CSRF doğrulaması (durum değiştiren istek)
+verifyCsrf(true);
 
 try {
     $user_id = $_SESSION['user_id'];

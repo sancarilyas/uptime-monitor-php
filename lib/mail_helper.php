@@ -23,7 +23,7 @@ class MailHelper {
             $smtp_host = getSystemSetting('smtp_host', '');
             $smtp_port = getSystemSetting('smtp_port', 587);
             $smtp_username = getSystemSetting('smtp_username', '');
-            $smtp_password = getSystemSetting('smtp_password', '');
+            $smtp_password = decryptSecret(getSystemSetting('smtp_password', ''));
             $smtp_encryption = getSystemSetting('smtp_encryption', 'tls');
             $from_email = getSystemSetting('from_email', '');
             $from_name = getSystemSetting('from_name', 'Uptime Monitor');

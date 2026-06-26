@@ -23,6 +23,9 @@ if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
     exit;
 }
 
+// CSRF doğrulaması
+verifyCsrf(true);
+
 // JSON verisini al
 $input = json_decode(file_get_contents('php://input'), true);
 $site_id = $input['site_id'] ?? null;

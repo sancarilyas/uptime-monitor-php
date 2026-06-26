@@ -45,6 +45,7 @@ include __DIR__ . '/../../includes/layout/header.php';
                 </div>
                 <div class="card-body">
                     <form method="POST" id="addUserForm">
+<?= csrfField() ?>
                         <input type="hidden" name="action" value="add_user">
                         
                         <div class="row">

@@ -16,6 +16,7 @@ $success_message = '';
 
 // Form işleme
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifyCsrf();
     $provider = $_POST['provider'] ?? 'twilio';
     $account_sid = $_POST['account_sid'] ?? '';
     $auth_token = $_POST['auth_token'] ?? '';
@@ -28,12 +29,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute();
         $existing = $stmt->fetch();
         
+        // Auth token'ı şifreli sakla (at-rest)
+        $auth_token_stored = encryptSecret($auth_token);
         if ($existing) {
             $stmt = $pdo->prepare("UPDATE sms_settings SET provider = ?, account_sid = ?, auth_token = ?, from_number = ?, enabled = ?, updated_at = NOW() WHERE id = ?");
-            $stmt->execute([$provider, $account_sid, $auth_token, $from_number, $enabled, $existing['id']]);
+            $stmt->execute([$provider, $account_sid, $auth_token_stored, $from_number, $enabled, $existing['id']]);
         } else {
             $stmt = $pdo->prepare("INSERT INTO sms_settings (provider, account_sid, auth_token, from_number, enabled) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([$provider, $account_sid, $auth_token, $from_number, $enabled]);
+            $stmt->execute([$provider, $account_sid, $auth_token_stored, $from_number, $enabled]);
         }
         
         $success_message = 'SMS ayarları başarıyla kaydedildi!';
@@ -47,6 +50,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $stmt = $pdo->prepare("SELECT * FROM sms_settings LIMIT 1");
 $stmt->execute();
 $sms_settings = $stmt->fetch() ?: ['provider' => 'twilio', 'enabled' => 0];
+// Şifreli auth token'ı formda göstermek için çöz
+if (!empty($sms_settings['auth_token'])) {
+    $sms_settings['auth_token'] = decryptSecret($sms_settings['auth_token']);
+}
 
 // Sayfa başlığı
 $page_title = 'SMS Bildirim Ayarları';
@@ -96,6 +103,7 @@ include dirname(__DIR__, 3) . '/includes/layout/header.php';
                 </div>
                 <div class="card-body">
                     <form method="POST">
+<?= csrfField() ?>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">

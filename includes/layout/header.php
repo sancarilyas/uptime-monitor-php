@@ -15,6 +15,7 @@ $current_lang = getCurrentLanguage();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?= htmlspecialchars(csrfToken(), ENT_QUOTES) ?>">
     <title><?= $page_title ?> - <?= __('app_name') ?></title>
     <?php if ($page_description): ?>
     <meta name="description" content="<?= htmlspecialchars($page_description) ?>">
@@ -30,6 +31,34 @@ $current_lang = getCurrentLanguage();
     <link rel="stylesheet" href="<?php echo $base_url; ?>assets/css/header.css">
     <base href="<?= $base_url ?>">
     <script>const base_url = "<?php echo $base_url; ?>";</script>
+    <script>
+    // CSRF: aynı kaynağa giden tüm durum değiştiren fetch isteklerine
+    // otomatik olarak X-CSRF-Token başlığını ekler.
+    (function () {
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        var token = meta ? meta.getAttribute('content') : '';
+        if (!token || !window.fetch) return;
+        var origFetch = window.fetch;
+        window.fetch = function (input, init) {
+            init = init || {};
+            var method = (init.method ||
+                (typeof input === 'object' && input && input.method) || 'GET').toUpperCase();
+            var url = (typeof input === 'string') ? input :
+                ((input && input.url) || '');
+            var isAbsolute = /^https?:\/\//i.test(url);
+            var sameOrigin = !isAbsolute || url.indexOf(window.location.origin) === 0;
+            if (method !== 'GET' && method !== 'HEAD' && sameOrigin) {
+                var headers = new Headers(init.headers ||
+                    (typeof input === 'object' && input ? input.headers : null) || {});
+                if (!headers.has('X-CSRF-Token')) {
+                    headers.set('X-CSRF-Token', token);
+                }
+                init.headers = headers;
+            }
+            return origFetch.call(this, input, init);
+        };
+    })();
+    </script>
 </head>
 <body>
     <!-- Tema Değiştirme Butonu -->

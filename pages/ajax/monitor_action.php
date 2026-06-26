@@ -15,6 +15,9 @@ if (!isAdmin()) {
 
 header('Content-Type: application/json');
 
+// CSRF doğrulaması
+verifyCsrf(true);
+
 $input = json_decode(file_get_contents('php://input'), true);
 $action = $input['action'] ?? '';
 

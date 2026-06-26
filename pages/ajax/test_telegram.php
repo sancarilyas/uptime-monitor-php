@@ -1,25 +1,23 @@
 <?php
-// Hata raporlamayı kapat
-error_reporting(0);
-ini_set('display_errors', 0);
+// Test endpoint: Telegram bildirimi
+// Standart yapılandırma: kimlik bilgileri .env'den gelir, decryptSecret/env kullanılabilir.
+require_once dirname(__DIR__, 2) . '/config/database.php';
+require_once dirname(__DIR__, 2) . '/includes/functions.php';
 
-// Basit database bağlantısı
-try {
-    $pdo = new PDO('mysql:host=localhost;dbname=uptime_monitor;charset=utf8mb4', 'root', '');
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    echo json_encode(['success' => false, 'message' => 'Veritabanı bağlantı hatası']);
-    exit;
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
 
 header('Content-Type: application/json');
 
-// Session kontrolü yap
-session_start();
+// Oturum kontrolü
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['success' => false, 'message' => 'Oturum açmanız gerekiyor']);
     exit;
 }
+
+// CSRF doğrulaması
+verifyCsrf(true);
 
 try {
     // Telegram ayarlarını getir
@@ -32,9 +30,9 @@ try {
         exit;
     }
     
-    $bot_token = $telegram_settings['bot_token'];
+    $bot_token = decryptSecret($telegram_settings['bot_token']);
     $chat_id = $telegram_settings['chat_id'];
-    
+
     if (empty($bot_token) || empty($chat_id)) {
         echo json_encode(['success' => false, 'message' => 'Bot token veya chat ID boş']);
         exit;

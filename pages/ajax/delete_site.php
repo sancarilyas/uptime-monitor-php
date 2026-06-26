@@ -7,15 +7,21 @@ ini_set('display_errors', 0);
 ob_start();
 
 require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../includes/functions.php';
 
 header('Content-Type: application/json');
 
 // Session kontrolü yap
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['success' => false, 'message' => 'Oturum açmanız gerekiyor']);
     exit;
 }
+
+// CSRF doğrulaması (durum değiştiren istek)
+verifyCsrf(true);
 
 // POST verilerini al
 $input = json_decode(file_get_contents('php://input'), true);

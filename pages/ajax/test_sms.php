@@ -1,25 +1,23 @@
 <?php
-// Hata raporlamayı kapat
-error_reporting(0);
-ini_set('display_errors', 0);
+// Test endpoint: SMS bildirimi
+// Standart yapılandırma: kimlik bilgileri .env'den gelir, decryptSecret/env kullanılabilir.
+require_once dirname(__DIR__, 2) . '/config/database.php';
+require_once dirname(__DIR__, 2) . '/includes/functions.php';
 
-// Basit database bağlantısı
-try {
-    $pdo = new PDO('mysql:host=localhost;dbname=uptime_monitor;charset=utf8mb4', 'root', '');
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    echo json_encode(['success' => false, 'message' => 'Veritabanı bağlantı hatası']);
-    exit;
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
 
 header('Content-Type: application/json');
 
-// Session kontrolü yap
-session_start();
+// Oturum kontrolü
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['success' => false, 'message' => 'Oturum açmanız gerekiyor']);
     exit;
 }
+
+// CSRF doğrulaması
+verifyCsrf(true);
 
 // POST verilerini al
 $input = json_decode(file_get_contents('php://input'), true);
@@ -44,7 +42,7 @@ try {
     // Twilio SMS gönder
     if ($sms_settings['provider'] === 'twilio') {
         $account_sid = $sms_settings['account_sid'];
-        $auth_token = $sms_settings['auth_token'];
+        $auth_token = decryptSecret($sms_settings['auth_token']);
         $from_number = $sms_settings['from_number'];
         
         if (empty($account_sid) || empty($auth_token) || empty($from_number)) {

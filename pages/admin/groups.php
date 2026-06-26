@@ -16,6 +16,7 @@ $success_message = '';
 
 // Grup ekleme işlemi
 if (isset($_POST['action']) && $_POST['action'] === 'add_group') {
+    verifyCsrf();
     $name = trim($_POST['name'] ?? '');
     $description = trim($_POST['description'] ?? '');
     
@@ -44,6 +45,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'add_group') {
 
 // Grup silme işlemi
 if (isset($_POST['action']) && $_POST['action'] === 'delete_group') {
+    verifyCsrf();
     $group_id = $_POST['group_id'] ?? 0;
     
     if ($group_id) {
@@ -67,6 +69,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'delete_group') {
 
 // Grup düzenleme işlemi
 if (isset($_POST['action']) && $_POST['action'] === 'edit_group') {
+    verifyCsrf();
     $group_id = $_POST['group_id'] ?? 0;
     $name = trim($_POST['name'] ?? '');
     $description = trim($_POST['description'] ?? '');
@@ -146,6 +149,7 @@ include __DIR__ . '/../../includes/layout/header.php';
                 </div>
                 <div class="card-body">
                     <form method="POST" id="addGroupForm">
+<?= csrfField() ?>
                         <input type="hidden" name="action" value="add_group">
                         
                         <div class="row">
@@ -261,6 +265,7 @@ include __DIR__ . '/../../includes/layout/header.php';
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" id="editGroupForm">
+<?= csrfField() ?>
                 <div class="modal-body">
                     <input type="hidden" name="action" value="edit_group">
                     <input type="hidden" name="group_id" id="edit_group_id">
@@ -317,6 +322,7 @@ include __DIR__ . '/../../includes/layout/header.php';
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= __('cancel') ?></button>
                 <form method="POST" style="display: inline;">
+<?= csrfField() ?>
                     <input type="hidden" name="action" value="delete_group">
                     <input type="hidden" name="group_id" id="delete_group_id">
                     <button type="submit" class="btn btn-danger"><?= __('delete') ?></button>

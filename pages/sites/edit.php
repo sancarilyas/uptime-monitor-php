@@ -44,6 +44,7 @@ if (!$site) {
 
 // Form işleme
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifyCsrf();
     $name = trim($_POST['name'] ?? '');
     $url = trim($_POST['url'] ?? '');
     $monitor_path = trim($_POST['monitor_path'] ?? '');
@@ -186,6 +187,7 @@ include __DIR__ . '/../../includes/layout/header.php';
                 </div>
                 <div class="card-body">
                     <form method="POST">
+                        <?= csrfField() ?>
                         <div class="mb-3">
                             <label for="name" class="form-label">Site Adı</label>
                             <input type="text" class="form-control" id="name" name="name" 

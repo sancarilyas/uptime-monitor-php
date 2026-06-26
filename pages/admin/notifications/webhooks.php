@@ -16,6 +16,7 @@ $success_message = '';
 
 // Form işleme
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifyCsrf();
     $action = $_POST['action'] ?? '';
     
     if ($action === 'add') {
@@ -119,6 +120,7 @@ include dirname(__DIR__, 3) . '/includes/layout/header.php';
                 </div>
                 <div class="card-body" id="webhookForm" style="display: none;">
                     <form method="POST">
+<?= csrfField() ?>
                         <input type="hidden" name="action" value="add">
                         
                         <div class="row">
@@ -259,6 +261,7 @@ include dirname(__DIR__, 3) . '/includes/layout/header.php';
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" id="editWebhookForm">
+<?= csrfField() ?>
                 <div class="modal-body">
                     <input type="hidden" name="action" value="edit">
                     <input type="hidden" name="id" id="edit_id">
@@ -385,9 +388,12 @@ function testWebhook(webhookId) {
 
 function deleteWebhook(webhookId, webhookName) {
     if (confirm('"' + webhookName + '" webhook\'u silinsin mi?')) {
+        const csrf = document.querySelector('meta[name="csrf-token"]');
+        const csrfVal = csrf ? csrf.getAttribute('content') : '';
         const form = document.createElement('form');
         form.method = 'POST';
-        form.innerHTML = '<input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="' + webhookId + '">';
+        form.innerHTML = '<input type="hidden" name="csrf_token" value="' + csrfVal + '">' +
+            '<input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="' + webhookId + '">';
         document.body.appendChild(form);
         form.submit();
     }

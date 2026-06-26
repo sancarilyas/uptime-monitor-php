@@ -16,6 +16,7 @@ $success_message = '';
 
 // Kullanıcı düzenleme
 if ($_POST['action'] ?? '' === 'edit_user') {
+    verifyCsrf();
     $user_id = $_POST['user_id'] ?? 0;
     $first_name = trim($_POST['first_name'] ?? '');
     $last_name = trim($_POST['last_name'] ?? '');
@@ -48,8 +49,9 @@ if ($_POST['action'] ?? '' === 'edit_user') {
 
 // Kullanıcı silme
 if ($_POST['action'] ?? '' === 'delete_user') {
+    verifyCsrf();
     $user_id = $_POST['user_id'] ?? 0;
-    
+
     if ($user_id && $user_id != $_SESSION['user_id']) {
         $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
         if ($stmt->execute([$user_id])) {
@@ -210,6 +212,7 @@ include __DIR__ . '/../../includes/layout/header.php';
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" id="editUserForm">
+<?= csrfField() ?>
                 <div class="modal-body">
                     <input type="hidden" name="action" value="edit_user">
                     <input type="hidden" name="user_id" id="edit_user_id">
@@ -321,6 +324,7 @@ include __DIR__ . '/../../includes/layout/header.php';
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= __('cancel') ?></button>
                 <form method="POST" style="display: inline;">
+<?= csrfField() ?>
                     <input type="hidden" name="action" value="delete_user">
                     <input type="hidden" name="user_id" id="delete_user_id">
                     <button type="submit" class="btn btn-danger"><?= __('delete') ?></button>

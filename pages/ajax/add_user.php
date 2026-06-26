@@ -20,6 +20,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+// CSRF doğrulaması
+verifyCsrf(true);
+
 $input = json_decode(file_get_contents('php://input'), true);
 
 if (!$input) {

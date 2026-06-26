@@ -18,6 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+// CSRF doğrulaması
+verifyCsrf(true);
+
 // Site güncelleme işlemi
 $site_id = $_POST['site_id'] ?? 0;
 $url = trim($_POST['url'] ?? '');

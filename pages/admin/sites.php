@@ -16,6 +16,7 @@ $success_message = '';
 
 // Site silme
 if ($_POST['action'] ?? '' === 'delete_site') {
+    verifyCsrf();
     $site_id = $_POST['site_id'] ?? 0;
     
     if ($site_id) {
@@ -175,6 +176,7 @@ include __DIR__ . '/../../includes/layout/header.php';
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= __('cancel') ?></button>
                 <form method="POST" style="display: inline;">
+<?= csrfField() ?>
                     <input type="hidden" name="action" value="delete_site">
                     <input type="hidden" name="site_id" id="delete_site_id">
                     <button type="submit" class="btn btn-danger"><?= __('delete') ?></button>

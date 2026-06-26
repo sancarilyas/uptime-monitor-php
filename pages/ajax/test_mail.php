@@ -19,6 +19,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+// CSRF doğrulaması
+verifyCsrf(true);
+
 // Test mail gönder
 $test_email = trim($_POST['test_email'] ?? '');
 

@@ -16,6 +16,7 @@ $success_message = '';
 
 // Mail ayarlarını kaydet
 if ($_POST['action'] ?? '' === 'save_mail_settings') {
+    verifyCsrf();
     $smtp_host = trim($_POST['smtp_host'] ?? '');
     $smtp_port = trim($_POST['smtp_port'] ?? '');
     $smtp_username = trim($_POST['smtp_username'] ?? '');
@@ -31,7 +32,8 @@ if ($_POST['action'] ?? '' === 'save_mail_settings') {
         setSystemSetting('smtp_host', $smtp_host);
         setSystemSetting('smtp_port', $smtp_port);
         setSystemSetting('smtp_username', $smtp_username);
-        setSystemSetting('smtp_password', $smtp_password);
+        // SMTP şifresini şifreli sakla (at-rest)
+        setSystemSetting('smtp_password', encryptSecret($smtp_password));
         setSystemSetting('smtp_encryption', $smtp_encryption);
         setSystemSetting('from_email', $from_email);
         setSystemSetting('from_name', $from_name);
@@ -48,7 +50,7 @@ if ($_POST['action'] ?? '' === 'save_mail_settings') {
 $smtp_host = getSystemSetting('smtp_host', '');
 $smtp_port = getSystemSetting('smtp_port', '587');
 $smtp_username = getSystemSetting('smtp_username', '');
-$smtp_password = getSystemSetting('smtp_password', '');
+$smtp_password = decryptSecret(getSystemSetting('smtp_password', ''));
 $smtp_encryption = getSystemSetting('smtp_encryption', 'tls');
 $from_email = getSystemSetting('from_email', '');
 $from_name = getSystemSetting('from_name', 'Uptime Monitor');
@@ -93,6 +95,7 @@ include __DIR__ . '/../../includes/layout/header.php';
                 </div>
                 <div class="card-body">
                     <form method="POST" id="mailSettingsForm">
+                        <?= csrfField() ?>
                         <input type="hidden" name="action" value="save_mail_settings">
                         
                         <div class="row">

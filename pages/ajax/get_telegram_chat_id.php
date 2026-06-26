@@ -3,7 +3,8 @@
 error_reporting(0);
 ini_set('display_errors', 0);
 
-require_once dirname(__DIR__, 3) . '/config/database.php';
+require_once dirname(__DIR__, 2) . '/config/database.php';
+require_once dirname(__DIR__, 2) . '/includes/functions.php';
 
 header('Content-Type: application/json');
 
@@ -16,6 +17,9 @@ if (!isset($_SESSION['user_id'])) {
     echo json_encode(['success' => false, 'message' => 'Oturum açmanız gerekiyor']);
     exit;
 }
+
+// CSRF doğrulaması (durum değiştiren istek)
+verifyCsrf(true);
 
 // Admin kontrolü
 if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {

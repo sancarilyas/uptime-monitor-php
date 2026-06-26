@@ -16,6 +16,7 @@ $success_message = '';
 
 // Form işleme
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifyCsrf();
     $bot_token = $_POST['bot_token'] ?? '';
     $chat_id = $_POST['chat_id'] ?? '';
     $enabled = isset($_POST['enabled']) ? 1 : 0;
@@ -26,12 +27,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute();
         $existing = $stmt->fetch();
         
+        // Bot token'ı şifreli sakla (at-rest)
+        $bot_token_stored = encryptSecret($bot_token);
         if ($existing) {
             $stmt = $pdo->prepare("UPDATE telegram_settings SET bot_token = ?, chat_id = ?, enabled = ?, updated_at = NOW() WHERE id = ?");
-            $stmt->execute([$bot_token, $chat_id, $enabled, $existing['id']]);
+            $stmt->execute([$bot_token_stored, $chat_id, $enabled, $existing['id']]);
         } else {
             $stmt = $pdo->prepare("INSERT INTO telegram_settings (bot_token, chat_id, enabled) VALUES (?, ?, ?)");
-            $stmt->execute([$bot_token, $chat_id, $enabled]);
+            $stmt->execute([$bot_token_stored, $chat_id, $enabled]);
         }
         
         $success_message = 'Telegram ayarları başarıyla kaydedildi!';
@@ -45,6 +48,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $stmt = $pdo->prepare("SELECT * FROM telegram_settings LIMIT 1");
 $stmt->execute();
 $telegram_settings = $stmt->fetch() ?: ['enabled' => 0];
+// Şifreli bot token'ı formda göstermek için çöz
+if (!empty($telegram_settings['bot_token'])) {
+    $telegram_settings['bot_token'] = decryptSecret($telegram_settings['bot_token']);
+}
 
 // Sayfa başlığı
 $page_title = 'Telegram Bot Ayarları';
@@ -94,6 +101,7 @@ include dirname(__DIR__, 3) . '/includes/layout/header.php';
                 </div>
                 <div class="card-body">
                     <form method="POST">
+<?= csrfField() ?>
                         <div class="mb-3">
                             <label for="bot_token" class="form-label">Bot Token</label>
                             <input type="text" class="form-control" id="bot_token" name="bot_token" 

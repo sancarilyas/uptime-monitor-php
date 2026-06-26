@@ -117,6 +117,14 @@ function createTables($pdo)
             setting_key VARCHAR(100) UNIQUE NOT NULL,
             setting_value TEXT,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )",
+
+        // Oran sınırlama (login brute-force + API rate limit) için
+        "CREATE TABLE IF NOT EXISTS rate_limits (
+            rate_key VARCHAR(190) PRIMARY KEY,
+            hits INT NOT NULL DEFAULT 0,
+            window_start INT NOT NULL DEFAULT 0,
+            blocked_until INT NOT NULL DEFAULT 0
         )"
     ];
 
