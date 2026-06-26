@@ -368,17 +368,34 @@ include __DIR__ . '/../../includes/layout/header.php';
         <div id="cardViewContent" class="view-content">
             <div class="row g-3">
                 <?php foreach ($sites as $site): ?>
-                    <?php 
+                    <?php
                     $uptime_24h = calculateUptime($site['id'], 1);
                     $status_class = $site['last_status'] === 'up' ? 'up' : 'down';
                     $status_text = $site['last_status'] === 'up' ? __('up') : __('down');
                     $status_color = $site['last_status'] === 'up' ? 'success' : 'danger';
+                    // SSL uyarı rozeti (yalnızca eyleme dönük durumlarda göster)
+                    $ssl_badge = null;
+                    if (!empty($site['ssl_monitor']) && !empty($site['ssl_expires_at'])) {
+                        $ssl_days = (int)floor((strtotime($site['ssl_expires_at']) - time()) / 86400);
+                        if ($ssl_days < 0) {
+                            $ssl_badge = ['cls' => 'danger', 'icon' => 'fa-lock-open', 'text' => 'SSL doldu'];
+                        } elseif ($ssl_days <= 14) {
+                            $ssl_badge = ['cls' => 'warning', 'icon' => 'fa-lock', 'text' => "SSL {$ssl_days}g"];
+                        }
+                    }
                     ?>
                     <div class="col-lg-4 col-md-6 site-filter-item" data-status="<?= $status_class ?>" data-group="<?= htmlspecialchars($site['group_name'] ?? '') ?>">
                         <div class="card site-card h-100 <?= $status_class ?>" data-site-id="<?= $site['id'] ?>" style="cursor: pointer;" onclick="window.location.href='<?= $base_url ?>sites/detail?id=<?= $site['id'] ?>'">
                             <div class="card-body">
                                 <div class="card-title-container mb-2">
-                                    <h5 class="card-title mb-0" title="<?= htmlspecialchars($site['name']) ?>"><?= htmlspecialchars($site['name']) ?></h5>
+                                    <h5 class="card-title mb-0" title="<?= htmlspecialchars($site['name']) ?>">
+                                        <?= htmlspecialchars($site['name']) ?>
+                                        <?php if ($ssl_badge): ?>
+                                            <span class="badge bg-<?= $ssl_badge['cls'] ?> ms-1" title="SSL sertifika durumu">
+                                                <i class="fas <?= $ssl_badge['icon'] ?>" aria-hidden="true"></i> <?= $ssl_badge['text'] ?>
+                                            </span>
+                                        <?php endif; ?>
+                                    </h5>
                                     <div class="dropdown" onclick="event.stopPropagation();">
                                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-label="Site işlemleri menüsü" aria-expanded="false">
                                             <i class="fas fa-ellipsis-v" aria-hidden="true"></i>

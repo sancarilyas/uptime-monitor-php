@@ -143,14 +143,27 @@ createTables($pdo);
 // --- Şema göçleri (var olan kurulumlar için kolon ekleme) ---
 function migrateSchema($pdo)
 {
-    // sites.is_public — public status sayfasında gösterim için
-    try {
-        $col = $pdo->query("SHOW COLUMNS FROM sites LIKE 'is_public'")->fetch();
-        if (!$col) {
-            $pdo->exec("ALTER TABLE sites ADD COLUMN is_public TINYINT(1) NOT NULL DEFAULT 0");
+    // Eksik kolonları güvenli biçimde ekle (MySQL + MariaDB uyumlu)
+    $columns = [
+        // Public status sayfasında gösterim için
+        'is_public'              => "TINYINT(1) NOT NULL DEFAULT 0",
+        // İçerik/keyword doğrulaması: sayfada bu metin yoksa 'down' say
+        'check_keyword'          => "VARCHAR(255) NULL",
+        // SSL sertifika son kullanma izleme
+        'ssl_monitor'            => "TINYINT(1) NOT NULL DEFAULT 0",
+        'ssl_expires_at'         => "DATETIME NULL",
+        'ssl_last_notified_date' => "DATE NULL",
+    ];
+
+    foreach ($columns as $name => $definition) {
+        try {
+            $exists = $pdo->query("SHOW COLUMNS FROM sites LIKE " . $pdo->quote($name))->fetch();
+            if (!$exists) {
+                $pdo->exec("ALTER TABLE sites ADD COLUMN `{$name}` {$definition}");
+            }
+        } catch (PDOException $e) {
+            error_log("migrateSchema {$name} hatası: " . $e->getMessage());
         }
-    } catch (PDOException $e) {
-        error_log("migrateSchema is_public hatası: " . $e->getMessage());
     }
 }
 

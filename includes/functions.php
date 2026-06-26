@@ -138,7 +138,11 @@ function checkMultipleSitesParallel($sites) {
         curl_setopt($ch, CURLOPT_USERAGENT, 'Uptime Monitor Bot 1.0 (Multi-Curl)');
         curl_setopt($ch, CURLOPT_HEADER, false);
         curl_setopt($ch, CURLOPT_NOBODY, false); // Sadece header değil, body da al (bazı siteler gerektirir)
-        
+        // SSL sertifika bilgisini topla (ssl_monitor için son kullanma tarihi)
+        if (!empty($site['ssl_monitor']) && stripos($url, 'https://') === 0) {
+            curl_setopt($ch, CURLOPT_CERTINFO, true);
+        }
+
         // Handle'ı multi curl'e ekle
         curl_multi_add_handle($multi_handle, $ch);
         
@@ -190,7 +194,25 @@ function checkMultipleSitesParallel($sites) {
             $status = 'down';
             $error = "HTTP {$http_code}";
         }
-        
+
+        // İçerik/keyword doğrulaması: HTTP başarılı olsa bile beklenen metin yoksa 'down'
+        if ($status === 'up' && !empty($site['check_keyword'])) {
+            if (stripos((string)$response, $site['check_keyword']) === false) {
+                $status = 'down';
+                $error = "İçerik doğrulaması başarısız: '{$site['check_keyword']}' bulunamadı";
+            }
+        }
+
+        // SSL sertifika son kullanma tarihi (https + ssl_monitor)
+        $ssl_expires_at = null;
+        if (!empty($site['ssl_monitor']) && stripos($site['url'], 'https://') === 0) {
+            $certinfo = curl_getinfo($ch, CURLINFO_CERTINFO);
+            $ssl_expires_at = extractSslExpiry($certinfo);
+            if ($ssl_expires_at) {
+                processSslForSite($site, $ssl_expires_at);
+            }
+        }
+
         // Sonucu kaydet
         $results[$site['id']] = [
             'site_id' => $site['id'],
@@ -200,9 +222,10 @@ function checkMultipleSitesParallel($sites) {
             'response_time' => $response_time,
             'http_code' => $http_code,
             'error' => $error,
+            'ssl_expires_at' => $ssl_expires_at,
             'previous_status' => $site['last_status'] ?? null
         ];
-        
+
         // Handle'ı kapat
         curl_multi_remove_handle($multi_handle, $ch);
         curl_close($ch);
@@ -981,5 +1004,99 @@ function getDailyUptimeStrip($site_id, $days = 90) {
     }
 
     return $strip;
+}
+
+// ============================================================
+// SSL SERTİFİKA İZLEME YARDIMCILARI
+// ============================================================
+
+/**
+ * curl CERTINFO çıktısından yaprak sertifikanın son kullanma tarihini
+ * 'Y-m-d H:i:s' biçiminde döndürür (bulunamazsa null).
+ */
+function extractSslExpiry($certinfo) {
+    if (empty($certinfo) || !is_array($certinfo)) {
+        return null;
+    }
+    $leaf = $certinfo[0] ?? null;
+    if (!$leaf || empty($leaf['Expire date'])) {
+        return null;
+    }
+    // Örn: "Jun 26 12:00:00 2026 GMT"
+    $ts = strtotime($leaf['Expire date']);
+    return $ts ? date('Y-m-d H:i:s', $ts) : null;
+}
+
+/**
+ * SSL son kullanma tarihini sites tablosuna yazar ve eşik (varsayılan 14 gün)
+ * altındaysa günde EN FAZLA BİR KEZ uyarı gönderir.
+ */
+function processSslForSite($site, $expires_at, $threshold_days = 14) {
+    global $pdo;
+    try {
+        $stmt = $pdo->prepare("UPDATE sites SET ssl_expires_at = ? WHERE id = ?");
+        $stmt->execute([$expires_at, $site['id']]);
+
+        $days_left = (int)floor((strtotime($expires_at) - time()) / 86400);
+        if ($days_left <= $threshold_days) {
+            $today = date('Y-m-d');
+            if (($site['ssl_last_notified_date'] ?? null) !== $today) {
+                sendSslExpiryNotification($site, $days_left, $expires_at);
+                $stmt = $pdo->prepare("UPDATE sites SET ssl_last_notified_date = ? WHERE id = ?");
+                $stmt->execute([$today, $site['id']]);
+            }
+        }
+    } catch (Exception $e) {
+        error_log("processSslForSite hatası: " . $e->getMessage());
+    }
+}
+
+/**
+ * SSL sertifikası yakında dolacak (veya dolmuş) siteler için
+ * Telegram + Email uyarısı gönderir. Site bildirim ayarlarına saygı duyar.
+ */
+function sendSslExpiryNotification($site, $days_left, $expires_at) {
+    if (empty($site['notifications_enabled'])) {
+        return;
+    }
+
+    $site_name = $site['name'];
+    $expiry_human = date('d.m.Y', strtotime($expires_at));
+    $priority = $site['notification_priority'] ?? 'high';
+
+    $msg = "🔒 *SSL Sertifika Uyarısı*\n\n";
+    $msg .= "🌐 Site: *{$site_name}*\n";
+    if ($days_left < 0) {
+        $msg .= "⛔ Sertifika *süresi doldu* ({$expiry_human})\n";
+    } else {
+        $msg .= "⏳ Sertifika *{$days_left} gün* içinde doluyor\n";
+        $msg .= "📅 Son geçerlilik: {$expiry_human}\n";
+    }
+
+    // Telegram
+    if (!empty($site['telegram_notifications'])) {
+        sendTelegramNotification($msg, $priority, $site['id']);
+    }
+
+    // Email
+    if (!empty($site['email_notifications']) && !empty($site['notification_emails'])) {
+        $emails = array_filter(
+            array_map('trim', explode(',', $site['notification_emails'])),
+            function ($e) { return filter_var($e, FILTER_VALIDATE_EMAIL); }
+        );
+        if ($emails) {
+            $subject = $days_left < 0
+                ? "SSL süresi doldu: {$site_name}"
+                : "SSL {$days_left} gün içinde doluyor: {$site_name}";
+            $body = "<h2>SSL Sertifika Uyarısı</h2>"
+                . "<p><strong>" . htmlspecialchars($site_name) . "</strong> sitesinin SSL sertifikası "
+                . ($days_left < 0 ? "<strong>süresi doldu</strong>" : "<strong>{$days_left} gün</strong> içinde dolacak")
+                . ".</p><p>Son geçerlilik tarihi: <strong>{$expiry_human}</strong></p>";
+            require_once __DIR__ . '/../lib/mail_helper.php';
+            foreach ($emails as $email) {
+                sendMailWithPHPMailer($email, $subject, $body, true);
+            }
+        }
+    }
 }
 ?>

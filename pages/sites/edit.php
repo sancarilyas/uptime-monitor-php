@@ -63,6 +63,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $notify_on_up = isset($_POST['notify_on_up']) ? 1 : 0;
     $notification_priority = $_POST['notification_priority'] ?? 'medium';
     $is_public = isset($_POST['is_public']) ? 1 : 0;
+    $check_keyword = trim($_POST['check_keyword'] ?? '');
+    $ssl_monitor = isset($_POST['ssl_monitor']) ? 1 : 0;
     
     // Validasyon
     if (empty($name) || empty($url)) {
@@ -95,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     name = ?, url = ?, monitor_path = ?, description = ?, check_interval = ?, notification_emails = ?,
                     group_id = ?, notifications_enabled = ?, email_notifications = ?, telegram_notifications = ?,
                     sms_notifications = ?, webhook_notifications = ?, notify_on_down = ?, notify_on_up = ?,
-                    notification_priority = ?, is_public = ?, updated_at = NOW()
+                    notification_priority = ?, is_public = ?, check_keyword = ?, ssl_monitor = ?, updated_at = NOW()
                     WHERE id = ? AND (user_id = ? OR (group_id = ? AND ? = 1))
                 ");
 
@@ -106,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $name, $url, $monitor_path, $description, $check_interval, $notification_emails, $group_id,
                     $notifications_enabled, $email_notifications, $telegram_notifications,
                     $sms_notifications, $webhook_notifications, $notify_on_down, $notify_on_up,
-                    $notification_priority, $is_public, $site_id, $_SESSION['user_id'], $user_group_id, $is_admin
+                    $notification_priority, $is_public, $check_keyword, $ssl_monitor, $site_id, $_SESSION['user_id'], $user_group_id, $is_admin
                 ]);
             } else {
                 throw new Exception('Bu siteyi düzenleme yetkiniz yok');
@@ -263,6 +265,38 @@ include __DIR__ . '/../../includes/layout/header.php';
                         </div>
                         <?php endif; ?>
                         
+                        <!-- Gelişmiş İzleme -->
+                        <hr>
+                        <h6 class="mb-3">🔎 Gelişmiş İzleme</h6>
+                        <div class="mb-3">
+                            <label for="check_keyword" class="form-label">İçerik / Keyword Kontrolü</label>
+                            <input type="text" class="form-control" id="check_keyword" name="check_keyword"
+                                   value="<?= htmlspecialchars($site['check_keyword'] ?? '') ?>"
+                                   placeholder="örn. Giriş Yap veya &lt;title&gt;içeriği"
+                                   <?= !$can_edit_site ? 'disabled' : '' ?>>
+                            <div class="form-text">
+                                Doldurulursa: sayfa 200 dönse bile bu metni içermiyorsa site
+                                <strong>"kesinti"</strong> sayılır (boş sayfa / hata sayfası tespiti).
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="ssl_monitor" name="ssl_monitor"
+                                       <?= !empty($site['ssl_monitor']) ? 'checked' : '' ?>
+                                       <?= !$can_edit_site ? 'disabled' : '' ?>>
+                                <label class="form-check-label" for="ssl_monitor">
+                                    <strong>SSL sertifikası son kullanma izleme</strong>
+                                </label>
+                                <div class="form-text">
+                                    HTTPS siteler için sertifika bitişine 14 gün kala bildirim gönderir.
+                                    <?php if (!empty($site['ssl_expires_at'])): ?>
+                                        <br>Son geçerlilik: <strong><?= date('d.m.Y', strtotime($site['ssl_expires_at'])) ?></strong>
+                                        (<?= max(0, (int)floor((strtotime($site['ssl_expires_at']) - time()) / 86400)) ?> gün)
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Public Görünürlük -->
                         <hr>
                         <h6 class="mb-3">🌐 Public Durum Sayfası</h6>
