@@ -18,32 +18,22 @@ if (isset($_POST['action']) && $_POST['action'] === 'login') {
     $email = trim($_POST['email'] ?? '');
     $password = trim($_POST['password'] ?? '');
 
-    // Brute-force koruması: IP başına 15 dk içinde 5 başarısız deneme, sonra 15 dk blok
-    $rl_key = 'login:' . clientIp();
-    $rl = rateLimitHit($rl_key, 5, 900, 900);
-
-    if (!$rl['allowed']) {
-        $error_message = 'Çok fazla başarısız giriş denemesi. Lütfen '
-            . ceil($rl['retry_after'] / 60) . ' dakika sonra tekrar deneyin.';
-    } elseif (empty($email) || empty($password)) {
+    if (empty($email) || empty($password)) {
         $error_message = __('required_fields');
     } else {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
-        $stmt->execute([$email]);
-        $user = $stmt->fetch();
+        // AuthService: rate-limit + parola doğrulama + session fixation önlemi
+        $userRepo = new \App\Repository\UserRepository($pdo);
+        $security = new \App\Service\SecurityService($pdo);
+        $auth = new \App\Service\AuthService($userRepo, $security);
 
-        if ($user && !empty($user['password_hash']) && password_verify($password, $user['password_hash'])) {
-            // Başarılı giriş — oturum sabitleme (session fixation) önlemi + sayaç sıfırlama
-            rateLimitReset($rl_key);
-            session_regenerate_id(true);
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['user_email'] = $user['email'];
-            $_SESSION['user_role'] = $user['role'];
+        $result = $auth->login($email, $password);
 
+        if ($result['success']) {
             header('Location: ' . $base_url . 'dashboard');
             exit;
         } else {
-            $error_message = __('login_error');
+            // rate-limit mesajı geldiyse onu göster, yoksa dil dosyasındaki genel hata
+            $error_message = $result['message'] ?? __('login_error');
         }
     }
 }

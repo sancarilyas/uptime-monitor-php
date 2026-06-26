@@ -20,35 +20,28 @@ if (isset($_POST['action']) && $_POST['action'] === 'register') {
     $password = trim($_POST['password'] ?? '');
     $confirm_password = trim($_POST['confirm_password'] ?? '');
 
-    // Kötüye kullanım koruması: IP başına saatte 10 kayıt denemesi
-    $rl = rateLimitHit('register:' . clientIp(), 10, 3600, 3600);
-
-    if (!$rl['allowed']) {
-        $error_message = 'Çok fazla kayıt denemesi. Lütfen daha sonra tekrar deneyin.';
-    } elseif (empty($email) || empty($password) || empty($confirm_password)) {
+    if (empty($email) || empty($password) || empty($confirm_password)) {
         $error_message = __('required_fields');
-    } elseif (strlen($password) < 8) {
-        $error_message = __('password_hint') ?? 'Şifre en az 8 karakter olmalıdır';
-    } elseif ($password !== $confirm_password) {
-        $error_message = __('password_mismatch');
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error_message = __('invalid_email') ?? 'Geçersiz e-posta adresi';
     } else {
-        // E-posta kontrolü
-        $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
-        $stmt->execute([$email]);
-        
-        if ($stmt->fetch()) {
-            $error_message = __('register_error');
+        // AuthService: doğrulama + rate-limit + kayıt
+        $userRepo = new \App\Repository\UserRepository($pdo);
+        $security = new \App\Service\SecurityService($pdo);
+        $auth = new \App\Service\AuthService($userRepo, $security);
+
+        $result = $auth->register($email, $password, $confirm_password);
+
+        if ($result['success']) {
+            $success_message = __('register_success');
         } else {
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare("INSERT INTO users (email, password_hash, role, created_at) VALUES (?, ?, 'user', NOW())");
-            
-            if ($stmt->execute([$email, $hashed_password])) {
-                $success_message = __('register_success');
-            } else {
-                $error_message = __('registration_failed') ?? 'Kayıt başarısız oldu';
-            }
+            // Hata koduna göre dil mesajı eşle
+            $errorMap = [
+                'rate_limited'        => 'Çok fazla kayıt denemesi. Lütfen daha sonra tekrar deneyin.',
+                'invalid_email'       => __('invalid_email') ?? 'Geçersiz e-posta adresi',
+                'password_too_short'  => __('password_hint') ?? 'Şifre en az 8 karakter olmalıdır',
+                'password_mismatch'   => __('password_mismatch'),
+                'email_exists'        => __('register_error'),
+            ];
+            $error_message = $errorMap[$result['error_code']] ?? __('registration_failed') ?? 'Kayıt başarısız oldu';
         }
     }
 }
