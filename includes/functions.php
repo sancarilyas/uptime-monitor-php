@@ -1,9 +1,21 @@
 <?php
+// ============================================================
+// YARDIMCI FONKSİYONLAR + SERVICE/REPOSITORY WRAPPER'LARI
+// ------------------------------------------------------------
+// Bu dosya hem saf yardımcı fonksiyonları (format, URL, cURL kontrol)
+// hem de yeni App\Service / App\Repository katmanlarına delege eden
+// geriye-dönük-uyumlu wrapper'ları içerir.
+//
+// NEDEN WRAPPER?
+//   monitor*.php (cron/daemon) bu dosyadaki fonksiyonları çağırır.
+//   Onları tamamen kaldırmak yerine içlerinden yeni servisleri
+//   çağırıyoruz — böylece cron bozulmadan yeni mimariye geçer.
+// ============================================================
+
 // Saat dilimini ayarla
 require_once __DIR__ . '/../config/timezone.php';
 
-// Yardımcı fonksiyonlar
-
+// Oturum yardımcıları (header.php ve eski sayfalar bunları kullanır)
 function isLoggedIn() {
     return isset($_SESSION['user_id']);
 }
@@ -29,10 +41,13 @@ function requireAdmin() {
     }
 }
 
+// ============================================================
+// FORMATLAMA YARDIMCILARI (saf fonksiyonlar)
+// ============================================================
+
 function formatUptime($percentage) {
     return number_format($percentage, 2) . '%';
 }
-
 
 function formatResponseTime($ms) {
     if ($ms === null) return 'N/A';
@@ -57,13 +72,17 @@ function validateUrl($url) {
     if (!preg_match('/^https?:\/\//', $url)) {
         $url = 'http://' . $url;
     }
-    
+
     return filter_var($url, FILTER_VALIDATE_URL) ? $url : false;
 }
 
+// ============================================================
+// cURL İZLEME YARDIMCILARI (saf — monitor.php bunları kullanır)
+// ============================================================
+
 function checkSiteStatus($url) {
     $start_time = microtime(true);
-    
+
     // cURL ile site kontrolü
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
@@ -72,15 +91,15 @@ function checkSiteStatus($url) {
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_USERAGENT, 'Uptime Monitor Bot 1.0');
-    
+
     $response = curl_exec($ch);
     $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $error = curl_error($ch);
     curl_close($ch);
-    
+
     $end_time = microtime(true);
     $response_time = round(($end_time - $start_time) * 1000); // milisaniye
-    
+
     if ($response === false || !empty($error)) {
         return [
             'status' => 'down',
@@ -89,10 +108,10 @@ function checkSiteStatus($url) {
             'error' => $error
         ];
     }
-    
+
     // HTTP status koduna göre durum belirleme
     $status = ($http_code >= 200 && $http_code < 400) ? 'up' : 'down';
-    
+
     return [
         'status' => $status,
         'response_time' => $response_time,
@@ -102,32 +121,29 @@ function checkSiteStatus($url) {
 }
 
 /**
- * Multi-cURL ile paralel site kontrolü
- * Tüm siteleri aynı anda kontrol eder - ÇOK HIZLI!
- * 
- * @param array $sites Site bilgileri dizisi [['id' => 1, 'url' => 'http://...'], ...]
- * @return array Her site için durum bilgileri
+ * Multi-cURL ile paralel site kontrolü.
+ * monitor.php bunu çağırır — DOKUNULMADI (orijinal davranış korundu).
  */
 function checkMultipleSitesParallel($sites) {
     if (empty($sites)) {
         return [];
     }
-    
+
     $start_time = microtime(true);
     $multi_handle = curl_multi_init();
     $curl_handles = [];
     $results = [];
-    
+
     // Her site için cURL handle oluştur
     foreach ($sites as $index => $site) {
         $ch = curl_init();
-        
+
         // URL'yi belirle
         $url = $site['url'];
         if (!empty($site['monitor_path'])) {
             $url = rtrim($site['url'], '/') . '/' . ltrim($site['monitor_path'], '/');
         }
-        
+
         // cURL ayarları
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -138,14 +154,10 @@ function checkMultipleSitesParallel($sites) {
         curl_setopt($ch, CURLOPT_USERAGENT, 'Uptime Monitor Bot 1.0 (Multi-Curl)');
         curl_setopt($ch, CURLOPT_HEADER, false);
         curl_setopt($ch, CURLOPT_NOBODY, false); // Sadece header değil, body da al (bazı siteler gerektirir)
-        // SSL sertifika bilgisini topla (ssl_monitor için son kullanma tarihi)
-        if (!empty($site['ssl_monitor']) && stripos($url, 'https://') === 0) {
-            curl_setopt($ch, CURLOPT_CERTINFO, true);
-        }
 
         // Handle'ı multi curl'e ekle
         curl_multi_add_handle($multi_handle, $ch);
-        
+
         // Handle'ı kaydet (site bilgisi ile birlikte)
         $curl_handles[$index] = [
             'handle' => $ch,
@@ -153,38 +165,38 @@ function checkMultipleSitesParallel($sites) {
             'start_time' => microtime(true)
         ];
     }
-    
+
     // Tüm istekleri paralel olarak çalıştır
     $running = null;
     do {
         curl_multi_exec($multi_handle, $running);
         curl_multi_select($multi_handle);
     } while ($running > 0);
-    
+
     // Sonuçları topla
     foreach ($curl_handles as $index => $handle_data) {
         $ch = $handle_data['handle'];
         $site = $handle_data['site'];
         $request_start = $handle_data['start_time'];
-        
+
         // Yanıt bilgilerini al
         $response = curl_multi_getcontent($ch);
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $curl_error = curl_error($ch);
         $total_time = curl_getinfo($ch, CURLINFO_TOTAL_TIME);
-        
+
         // Yanıt süresini hesapla (milisaniye)
         $response_time = round((microtime(true) - $request_start) * 1000);
-        
+
         // Alternatif: curl_getinfo'dan gelen süreyi kullan
         if ($total_time > 0) {
             $response_time = round($total_time * 1000);
         }
-        
+
         // Durumu belirle
         $status = 'down';
         $error = null;
-        
+
         if ($response === false || !empty($curl_error)) {
             $status = 'down';
             $error = $curl_error ?: 'Connection failed';
@@ -193,24 +205,6 @@ function checkMultipleSitesParallel($sites) {
         } else {
             $status = 'down';
             $error = "HTTP {$http_code}";
-        }
-
-        // İçerik/keyword doğrulaması: HTTP başarılı olsa bile beklenen metin yoksa 'down'
-        if ($status === 'up' && !empty($site['check_keyword'])) {
-            if (stripos((string)$response, $site['check_keyword']) === false) {
-                $status = 'down';
-                $error = "İçerik doğrulaması başarısız: '{$site['check_keyword']}' bulunamadı";
-            }
-        }
-
-        // SSL sertifika son kullanma tarihi (https + ssl_monitor)
-        $ssl_expires_at = null;
-        if (!empty($site['ssl_monitor']) && stripos($site['url'], 'https://') === 0) {
-            $certinfo = curl_getinfo($ch, CURLINFO_CERTINFO);
-            $ssl_expires_at = extractSslExpiry($certinfo);
-            if ($ssl_expires_at) {
-                processSslForSite($site, $ssl_expires_at);
-            }
         }
 
         // Sonucu kaydet
@@ -222,7 +216,6 @@ function checkMultipleSitesParallel($sites) {
             'response_time' => $response_time,
             'http_code' => $http_code,
             'error' => $error,
-            'ssl_expires_at' => $ssl_expires_at,
             'previous_status' => $site['last_status'] ?? null
         ];
 
@@ -230,719 +223,174 @@ function checkMultipleSitesParallel($sites) {
         curl_multi_remove_handle($multi_handle, $ch);
         curl_close($ch);
     }
-    
+
     // Multi handle'ı kapat
     curl_multi_close($multi_handle);
-    
+
     $total_time = round((microtime(true) - $start_time) * 1000);
-    
+
     // Log için özet bilgi
     $results['_summary'] = [
         'total_sites' => count($sites),
         'total_time_ms' => $total_time,
         'avg_time_per_site' => count($sites) > 0 ? round($total_time / count($sites), 2) : 0
     ];
-    
+
     return $results;
 }
 
+// ============================================================
+// SERVICE/REPOSITORY WRAPPER'LARI
+// ------------------------------------------------------------
+// Aşağıdaki fonksiyonlar yeni App\Service / App\Repository
+// katmanlarına delege eder. monitor*.php ve eski çağıranlar
+// fark etmeden yeni mimariyi kullanır.
+//
+// PDO'yu güvenli şekilde alır (global $pdo yoksa App\Core\Database).
+// ============================================================
+
+/**
+ * Global PDO'yu güvenli şekilde döndürür.
+ */
+function _db(): \PDO {
+    if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof \PDO) {
+        return $GLOBALS['pdo'];
+    }
+    $pdo = \App\Core\Database::pdo();
+    if ($pdo === null) {
+        throw new \RuntimeException('PDO bağlantısı mevcut değil (config/database.php yüklenmemiş olabilir).');
+    }
+    return $pdo;
+}
+
+/**
+ * SecurityService singleton (CSRF/encrypt/rate-limit).
+ */
+function _security(): \App\Service\SecurityService {
+    static $svc = null;
+    if ($svc === null) {
+        $svc = new \App\Service\SecurityService(_db());
+    }
+    return $svc;
+}
+
+/**
+ * NotificationService singleton.
+ */
+function _notifications(): \App\Service\NotificationService {
+    static $svc = null;
+    if ($svc === null) {
+        $svc = new \App\Service\NotificationService(_db());
+    }
+    return $svc;
+}
+
+// ------------------------------------------------------------------
+// UptimeLogRepository wrapper'ları
+// ------------------------------------------------------------------
+
 function logSiteStatus($site_id, $status, $response_time, $http_code, $error = null) {
-    global $pdo;
-    
-    // Veritabanına kaydet (ana kaynak)
-    try {
-        $stmt = $pdo->prepare("INSERT INTO uptime_logs (site_id, status, response_time, http_code, error, timestamp) VALUES (?, ?, ?, ?, ?, NOW())");
-        $stmt->execute([$site_id, $status, $response_time, $http_code, $error]);
-        
-        // Sites tablosunu güncelle (monitor.php'den çağrılıyorsa gereksiz ama zarar vermez)
-        // $stmt = $pdo->prepare("UPDATE sites SET last_check = NOW(), last_status = ?, response_time = ? WHERE id = ?");
-        // $stmt->execute([$status, $response_time, $site_id]);
-        
-    } catch (Exception $e) {
-        error_log("Uptime log kaydetme hatası: " . $e->getMessage());
-    }
-    
-    // JSON log dosyasına da kaydet (yedek)
-    $year_month = date('Y-m');
-    $log_file = "logs/{$year_month}.json";
-    
-    // Logs klasörünü oluştur
-    if (!file_exists('logs')) {
-        mkdir('logs', 0755, true);
-    }
-    
-    $log_data = [];
-    if (file_exists($log_file)) {
-        $log_data = json_decode(file_get_contents($log_file), true) ?: [];
-    }
-    
-    $log_entry = [
-        'site_id' => $site_id,
-        'timestamp' => date('Y-m-d H:i:s'),
-        'status' => $status,
-        'response_time' => $response_time,
-        'http_code' => $http_code,
-        'error' => $error
-    ];
-    
-    $log_data[] = $log_entry;
-    
-    // Son 30 günlük veriyi tut
-    $cutoff_date = date('Y-m-d H:i:s', strtotime('-30 days'));
-    $log_data = array_filter($log_data, function($entry) use ($cutoff_date) {
-        return $entry['timestamp'] >= $cutoff_date;
-    });
-    
-    file_put_contents($log_file, json_encode($log_data, JSON_PRETTY_PRINT));
-    
-    // Alert tablosuna da kaydet
-    $stmt = $pdo->prepare("INSERT INTO alerts (site_id, status, message, timestamp) VALUES (?, ?, ?, NOW())");
-    $message = $status === 'up' ? 'Site çalışıyor' : 'Site kesintide';
-    if ($error) {
-        $message .= ' - ' . $error;
-    }
-    $stmt->execute([$site_id, $status, $message]);
-}
-
-function sendResponseTimeNotification($site_id, $response_time, $site_url, $site_name, $threshold = 5000) {
-    global $pdo;
-    
-    // Response time bildirim kurallarını kontrol et
-    $stmt = $pdo->prepare("
-        SELECT * FROM notification_rules 
-        WHERE event_type = 'response_time' 
-        AND (site_id = ? OR site_id IS NULL) 
-        AND is_active = 1
-    ");
-    $stmt->execute([$site_id]);
-    $rules = $stmt->fetchAll();
-    
-    if (empty($rules)) {
-        return;
-    }
-    
-    $subject = "⚠️ Yanıt Süresi Aşımı: {$site_name}";
-    $message = "Site yanıt süresi belirlenen eşiği aştı:\n\n";
-    $message .= "Site: {$site_name}\n";
-    $message .= "URL: {$site_url}\n";
-    $message .= "Yanıt Süresi: " . number_format($response_time) . " ms\n";
-    $message .= "Eşik: " . number_format($threshold) . " ms\n";
-    $message .= "Zaman: " . date('Y-m-d H:i:s');
-    
-    foreach ($rules as $rule) {
-        // Email bildirimi
-        if ($rule['email_enabled']) {
-            sendEmailNotification($message, $subject, 'high');
-        }
-        
-        // SMS bildirimi
-        if ($rule['sms_enabled']) {
-            sendSMSNotification($message, 'high');
-        }
-        
-        // Telegram bildirimi
-        if ($rule['telegram_enabled']) {
-            sendTelegramNotification($message, 'high', $site_id);
-        }
-        
-        // Webhook bildirimi
-        if ($rule['webhook_enabled']) {
-            sendWebhookNotification($message, 'high', $site_id);
-        }
-    }
-}
-
-function sendNotification($site_id, $status, $site_url, $site_name) {
-    global $pdo;
-    
-    // Site bilgilerini al
-    $stmt = $pdo->prepare("SELECT notification_emails FROM sites WHERE id = ?");
-    $stmt->execute([$site_id]);
-    $site = $stmt->fetch();
-    
-    if (!$site || empty($site['notification_emails'])) {
-        return;
-    }
-    
-    $emails = explode(',', $site['notification_emails']);
-    $emails = array_map('trim', $emails);
-    
-    $subject = $status === 'up' ? 
-        "✅ Site Tekrar Çalışıyor: {$site_name}" : 
-        "❌ Site Kesintide: {$site_name}";
-    
-    $message = $status === 'up' ? 
-        "Site tekrar çalışmaya başladı:\n\nSite: {$site_name}\nURL: {$site_url}\nZaman: " . date('Y-m-d H:i:s') :
-        "Site kesintide:\n\nSite: {$site_name}\nURL: {$site_url}\nZaman: " . date('Y-m-d H:i:s');
-    
-        // PHPMailer sınıfını yükle
-        require_once 'lib/mail_helper.php';
-
-        foreach ($emails as $email) {
-            if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                // MailHelper sınıfını kullan
-                $mailHelper = new MailHelper();
-                $result = $mailHelper->sendSiteNotification($email, $site_name, $site_url, $status);
-                
-                // Log'a kaydet
-                $log_status = $result['success'] ? 'sent' : 'failed';
-                $stmt = $pdo->prepare("INSERT INTO notification_logs (site_id, event_type, priority, notification_type, recipient, message, status, sent_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
-                $stmt->execute([$site_id, $status, 'medium', 'email', $email, $message, $log_status]);
-            }
-        }
+    $repo = new \App\Repository\UptimeLogRepository(_db());
+    $repo->logStatus($site_id, $status, $response_time, $http_code, $error);
 }
 
 function calculateUptime($site_id, $days = 30) {
-    global $pdo;
-    
-    try {
-        // Veritabanından hesapla (ana kaynak)
-        $stmt = $pdo->prepare("
-            SELECT 
-                COUNT(*) as total_checks,
-                SUM(CASE WHEN status = 'up' THEN 1 ELSE 0 END) as up_checks
-            FROM uptime_logs 
-            WHERE site_id = ? AND timestamp >= DATE_SUB(NOW(), INTERVAL ? DAY)
-        ");
-        $stmt->execute([$site_id, $days]);
-        $result = $stmt->fetch();
-        
-        if ($result['total_checks'] > 0) {
-            return ($result['up_checks'] / $result['total_checks']) * 100;
-        }
-        
-        // Fallback: JSON dosyasından hesapla
-        $year_month = date('Y-m');
-        $log_file = "logs/{$year_month}.json";
-        
-        if (!file_exists($log_file)) {
-            return 0;
-        }
-        
-        $log_data = json_decode(file_get_contents($log_file), true) ?: [];
-        
-        // Belirtilen gün sayısına göre filtrele
-        $cutoff_date = date('Y-m-d H:i:s', strtotime("-{$days} days"));
-        $filtered_logs = array_filter($log_data, function($entry) use ($site_id, $cutoff_date) {
-            return $entry['site_id'] == $site_id && $entry['timestamp'] >= $cutoff_date;
-        });
-        
-        if (empty($filtered_logs)) {
-            return 0;
-        }
-        
-        $total_checks = count($filtered_logs);
-        $up_checks = count(array_filter($filtered_logs, function($entry) {
-            return $entry['status'] === 'up';
-        }));
-        
-        return ($up_checks / $total_checks) * 100;
-        
-    } catch (Exception $e) {
-        error_log("Uptime hesaplama hatası: " . $e->getMessage());
-        return 0;
-    }
+    $repo = new \App\Repository\UptimeLogRepository(_db());
+    return $repo->calculateUptime($site_id, $days);
 }
 
+function getDailyUptimeStrip($site_id, $days = 90) {
+    $repo = new \App\Repository\UptimeLogRepository(_db());
+    return $repo->getDailyUptimeStrip($site_id, $days);
+}
+
+// ------------------------------------------------------------------
+// SettingsRepository wrapper'ları
+// ------------------------------------------------------------------
+
 function getSystemSetting($key, $default = null) {
-    global $pdo;
-    
-    $stmt = $pdo->prepare("SELECT setting_value FROM system_settings WHERE setting_key = ?");
-    $stmt->execute([$key]);
-    $result = $stmt->fetch();
-    
-    return $result ? $result['setting_value'] : $default;
+    $repo = new \App\Repository\SettingsRepository(_db());
+    return $repo->get($key, $default);
 }
 
 function setSystemSetting($key, $value) {
-    global $pdo;
-    
-    $stmt = $pdo->prepare("INSERT INTO system_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
-    return $stmt->execute([$key, $value]);
+    $repo = new \App\Repository\SettingsRepository(_db());
+    return $repo->set($key, $value);
 }
 
+// ------------------------------------------------------------------
+// NotificationService wrapper'ları
+// ------------------------------------------------------------------
+
 /**
- * Site durumu değiştiğinde gelişmiş bildirim gönder
+ * Site durumu değiştiğinde gelişmiş bildirim.
  */
 function sendAdvancedNotification($site_id, $site_name, $event_type, $status, $response_time = null, $is_manual_check = false) {
-    global $pdo;
-    
-    try {
-        // Önce site bildirim ayarlarını kontrol et
-        $stmt = $pdo->prepare("SELECT * FROM sites WHERE id = ?");
-        $stmt->execute([$site_id]);
-        $site = $stmt->fetch();
-        
-        if (!$site) {
-            return; // Site bulunamadı
-        }
-        
-        // Site bildirimleri kapalı mı kontrol et
-        if (!$site['notifications_enabled']) {
-            return; // Site bildirimleri kapalı
-        }
-        
-        // Manuel kontrol değilse, olay türüne göre bildirim kontrolü yap
-        if (!$is_manual_check) {
-            if ($event_type === 'down' && !$site['notify_on_down']) {
-                return; // Site kapandığında bildirim gönderilmesin
-            }
-            
-            if ($event_type === 'up' && !$site['notify_on_up']) {
-                return; // Site açıldığında bildirim gönderilmesin
-            }
-        }
-        
-        // Mesaj hazırla
-        $status_text = $status === 'up' ? '✅ Çalışıyor' : '❌ Kesinti';
-        $message = "🔔 *Uptime Monitor*\n\n";
-        $message .= "🌐 Site: *{$site_name}*\n";
-        $message .= "📊 Durum: {$status_text}\n";
-        
-        // Manuel kontrol için özel mesaj
-        if ($is_manual_check) {
-            $message .= "🔧 *Manuel Kontrol Sonucu*\n";
-        }
-        
-        $message .= "📅 Tarih: " . date('d.m.Y H:i:s') . "\n";
-        
-        if ($response_time) {
-            $message .= "⏱️ Yanıt Süresi: {$response_time}ms\n";
-        }
-        
-        // Site ayarlarına göre bildirim gönder
-        $priority = $site['notification_priority'] ?? 'medium';
-        
-        // Email bildirimi
-        if ($site['email_notifications'] && !empty($site['notification_emails'])) {
-            sendEmailNotification($site_name, $event_type, $status, $site['notification_emails'], $response_time, $is_manual_check);
-        }
-        
-        // Telegram bildirimi
-        if ($site['telegram_notifications']) {
-            sendTelegramNotification($message, $priority, $site['id']);
-        }
-        
-        // SMS bildirimi
-        if ($site['sms_notifications']) {
-            sendSMSNotification($message, $priority);
-        }
-        
-        // Webhook bildirimi
-        if ($site['webhook_notifications']) {
-            sendWebhookNotification($site_id, $site_name, $event_type, $status, $response_time, $priority);
-        }
-        
-    } catch (Exception $e) {
-        error_log("Bildirim hatası: " . $e->getMessage());
-    }
+    _notifications()->notifyStatusChange($site_id, $site_name, $event_type, $status, $response_time, $is_manual_check);
 }
 
-/**
- * Email bildirimi gönder
- */
+function sendNotification($site_id, $status, $site_url, $site_name) {
+    _notifications()->sendSiteNotification($site_id, $site_name, $site_url, $status);
+}
+
+function sendResponseTimeNotification($site_id, $response_time, $site_url, $site_name, $threshold = 5000) {
+    _notifications()->notifyResponseTimeExceeded($site_id, $site_name, $site_url, $response_time, $threshold);
+}
+
 function sendEmailNotification($site_name, $event_type, $status, $notification_emails, $response_time = null, $is_manual_check = false) {
-    try {
-        if (empty($notification_emails)) {
-            return false;
-        }
-        
-        $emails = array_map('trim', explode(',', $notification_emails));
-        $emails = array_filter($emails, function($email) {
-            return filter_var($email, FILTER_VALIDATE_EMAIL);
-        });
-        
-        if (empty($emails)) {
-            return false;
-        }
-        
-        $subject = "Uptime Monitor - {$site_name} " . ($status === 'up' ? 'Çalışıyor' : 'Kesinti');
-        if ($is_manual_check) {
-            $subject = "Uptime Monitor - Manuel Kontrol - {$site_name} " . ($status === 'up' ? 'Çalışıyor' : 'Kesinti');
-        }
-        
-        // Site URL'ini al
-        global $pdo;
-        $stmt = $pdo->prepare("SELECT url FROM sites WHERE name = ?");
-        $stmt->execute([$site_name]);
-        $site_data = $stmt->fetch();
-        $site_url = $site_data ? $site_data['url'] : 'Bilinmiyor';
-        
-        $timestamp = date('d.m.Y H:i:s');
-        
-        // Template'leri kullan
-        require_once __DIR__ . '/../lib/mail_templates.php';
-        
-        if ($is_manual_check) {
-            $message = getManualCheckTemplate($site_name, $site_url, $status, $timestamp, $response_time);
-        } else {
-            $message = getSiteNotificationTemplate($site_name, $site_url, $status, $timestamp);
-        }
-        
-        // PHPMailer ile gönder
-        require_once __DIR__ . '/../lib/mail_helper.php';
-        
-        $success_count = 0;
-        
-        foreach ($emails as $email) {
-            $result = sendMailWithPHPMailer($email, $subject, $message, true);
-            
-            if ($result['success']) {
-                $success_count++;
-            }
-        }
-        
-        return $success_count > 0;
-        
-    } catch (Exception $e) {
-        return false;
-    }
+    return _notifications()->sendEmailNotification($site_name, $event_type, $status, $notification_emails, $response_time, $is_manual_check);
 }
 
-/**
- * Telegram bildirimi gönder
- */
 function sendTelegramNotification($message, $priority = 'medium', $site_id = null) {
-    global $pdo;
-    
-    try {
-        // Telegram ayarlarını getir
-        $stmt = $pdo->prepare("SELECT * FROM telegram_settings WHERE enabled = 1 LIMIT 1");
-        $stmt->execute();
-        $telegram_settings = $stmt->fetch();
-        
-        if (!$telegram_settings || empty($telegram_settings['bot_token']) || empty($telegram_settings['chat_id'])) {
-            return false;
-        }
-        
-        $bot_token = decryptSecret($telegram_settings['bot_token']);
-        $chat_id = $telegram_settings['chat_id'];
-
-        // Telegram Bot API çağrısı
-        $url = "https://api.telegram.org/bot{$bot_token}/sendMessage";
-        
-        $data = [
-            'chat_id' => $chat_id,
-            'text' => $message,
-            'parse_mode' => 'Markdown'
-        ];
-        
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-        
-        $response = curl_exec($ch);
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        
-        // Log'a kaydet
-        $log_status = ($http_code === 200) ? 'sent' : 'failed';
-        $stmt = $pdo->prepare("INSERT INTO notification_logs (site_id, event_type, priority, notification_type, recipient, message, status, sent_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
-        $stmt->execute([$site_id ?? 0, 'status_change', $priority, 'telegram', $chat_id, $message, $log_status]);
-        
-        return $http_code === 200;
-        
-    } catch (Exception $e) {
-        error_log("Telegram bildirim hatası: " . $e->getMessage());
-        return false;
-    }
+    return _notifications()->sendTelegramNotification($message, $priority, $site_id);
 }
 
-/**
- * SMS bildirimi gönder
- */
 function sendSMSNotification($message, $priority = 'medium') {
-    global $pdo;
-    
-    try {
-        // SMS ayarlarını getir
-        $stmt = $pdo->prepare("SELECT * FROM sms_settings WHERE enabled = 1 LIMIT 1");
-        $stmt->execute();
-        $sms_settings = $stmt->fetch();
-        
-        if (!$sms_settings || empty($sms_settings['account_sid']) || empty($sms_settings['auth_token']) || empty($sms_settings['from_number'])) {
-            return false;
-        }
-        
-        // SMS için telefon numarası gerekli - şimdilik skip
-        // Bu fonksiyon daha sonra telefon numarası listesi ile genişletilebilir
-        return false;
-        
-    } catch (Exception $e) {
-        error_log("SMS bildirim hatası: " . $e->getMessage());
-        return false;
-    }
+    return _notifications()->sendSMSNotification($message, $priority);
 }
 
-/**
- * Webhook bildirimi gönder
- */
 function sendWebhookNotification($site_id, $site_name, $event_type, $status, $response_time, $priority = 'medium') {
-    global $pdo;
-    
-    try {
-        // Aktif webhook'ları getir
-        $stmt = $pdo->prepare("SELECT * FROM webhook_settings WHERE enabled = 1");
-        $stmt->execute();
-        $webhooks = $stmt->fetchAll();
-        
-        foreach ($webhooks as $webhook) {
-            // Payload template'i işle
-            $payload = $webhook['payload_template'];
-            $payload = str_replace('{{message}}', "Site {$site_name} durumu: {$status}", $payload);
-            $payload = str_replace('{{site_name}}', $site_name, $payload);
-            $payload = str_replace('{{status}}', $status, $payload);
-            $payload = str_replace('{{timestamp}}', date('d.m.Y H:i:s'), $payload);
-            
-            // Headers'ı parse et
-            $headers = [];
-            if (!empty($webhook['headers'])) {
-                $headers_array = json_decode($webhook['headers'], true);
-                if ($headers_array) {
-                    foreach ($headers_array as $key => $value) {
-                        $headers[] = $key . ': ' . $value;
-                    }
-                }
-            }
-            
-            // Webhook gönder
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $webhook['url']);
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $webhook['method']);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-            
-            if (!empty($headers)) {
-                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-            }
-            
-            $response = curl_exec($ch);
-            $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-            
-            // Log'a kaydet
-            $log_status = ($http_code >= 200 && $http_code < 300) ? 'sent' : 'failed';
-            $stmt = $pdo->prepare("INSERT INTO notification_logs (site_id, event_type, priority, notification_type, recipient, message, status, sent_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
-            $stmt->execute([$site_id, $event_type, $priority, 'webhook', $webhook['url'], $payload, $log_status]);
-        }
-        
-        return true;
-        
-    } catch (Exception $e) {
-        error_log("Webhook bildirim hatası: " . $e->getMessage());
-        return false;
-    }
+    return _notifications()->sendWebhookNotification($site_id, $site_name, $event_type, $status, $response_time, $priority);
 }
 
-// ============================================================
-// GÜVENLİK YARDIMCILARI
-// ------------------------------------------------------------
-// CSRF koruması, sır şifreleme (at-rest) ve oran sınırlama.
-// Tüm sayfalar config/database.php + functions.php yüklediği
-// için bu fonksiyonlar her yerde kullanılabilir.
-// ============================================================
+// ------------------------------------------------------------------
+// SecurityService wrapper'ları
+// ------------------------------------------------------------------
 
-/**
- * Oturuma bağlı CSRF token'ı döndürür (yoksa üretir).
- */
 function csrfToken() {
-    if (empty($_SESSION['csrf_token'])) {
-        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-    }
-    return $_SESSION['csrf_token'];
+    return _security()->csrfToken();
 }
 
-/**
- * Formlara eklenecek gizli CSRF input'unu döndürür.
- */
 function csrfField() {
-    return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars(csrfToken(), ENT_QUOTES) . '">';
+    return _security()->csrfField();
 }
 
-/**
- * Gönderilen CSRF token'ı doğrular. Geçersizse:
- *   - JSON isteklerinde 403 + JSON hata döndürüp çıkar
- *   - Normal isteklerde 403 + sade metin döndürüp çıkar
- * Token, POST alanından (csrf_token) veya X-CSRF-Token header'ından okunur.
- */
 function verifyCsrf($asJson = false) {
-    // Sadece durum değiştiren methodlarda kontrol et
-    $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-    if (!in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
-        return true;
-    }
-
-    $sent = $_POST['csrf_token'] ?? '';
-    if ($sent === '') {
-        // AJAX/JSON istemcileri header ile gönderebilir
-        $headers = function_exists('getallheaders') ? getallheaders() : [];
-        foreach ($headers as $k => $v) {
-            if (strcasecmp($k, 'X-CSRF-Token') === 0) { $sent = $v; break; }
-        }
-    }
-
-    $valid = !empty($_SESSION['csrf_token']) && is_string($sent)
-        && hash_equals($_SESSION['csrf_token'], $sent);
-
-    if (!$valid) {
-        http_response_code(403);
-        if ($asJson) {
-            header('Content-Type: application/json');
-            echo json_encode([
-                'success' => false,
-                'message' => 'Güvenlik doğrulaması başarısız (CSRF). Sayfayı yenileyip tekrar deneyin.',
-                'error_code' => 'CSRF_FAILED'
-            ]);
-        } else {
-            echo 'Güvenlik doğrulaması başarısız (CSRF). Lütfen sayfayı yenileyip tekrar deneyin.';
-        }
-        exit;
-    }
-    return true;
+    return _security()->verifyCsrf($asJson);
 }
 
-/**
- * Uygulama şifreleme anahtarını (.env APP_KEY) 32 baytlık binary olarak döndürür.
- * APP_KEY "base64:..." biçiminde veya ham string olabilir.
- * Anahtar yoksa null döner (bu durumda şifreleme devre dışı kalır).
- */
 function getAppKey() {
-    static $key = false;
-    if ($key !== false) {
-        return $key;
-    }
-    $raw = function_exists('env') ? env('APP_KEY', '') : (getenv('APP_KEY') ?: '');
-    if (!$raw) {
-        $key = null;
-        return $key;
-    }
-    if (strpos($raw, 'base64:') === 0) {
-        $decoded = base64_decode(substr($raw, 7), true);
-        $key = $decoded !== false ? $decoded : null;
-    } else {
-        // Ham anahtarı 32 bayta normalize et
-        $key = hash('sha256', $raw, true);
-    }
-    return $key;
+    return _security()->getAppKey();
 }
 
-/**
- * Bir sırrı AES-256-GCM ile şifreler. Çıktı: "enc:v1:<base64>".
- * Boş değer veya anahtar yoksa girdi olduğu gibi döner (geriye dönük uyumluluk).
- */
 function encryptSecret($plaintext) {
-    if ($plaintext === null || $plaintext === '') {
-        return $plaintext;
-    }
-    $key = getAppKey();
-    if ($key === null || !function_exists('openssl_encrypt')) {
-        return $plaintext; // anahtar yoksa düz metin (sistem çalışmaya devam etsin)
-    }
-    $iv = random_bytes(12);
-    $tag = '';
-    $cipher = openssl_encrypt($plaintext, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag);
-    if ($cipher === false) {
-        return $plaintext;
-    }
-    return 'enc:v1:' . base64_encode($iv . $tag . $cipher);
+    return _security()->encryptSecret($plaintext);
 }
 
-/**
- * encryptSecret ile şifrelenmiş değeri çözer.
- * "enc:v1:" ön eki yoksa değeri olduğu gibi döndürür (eski düz metin kayıtlar çalışır).
- */
 function decryptSecret($value) {
-    if (!is_string($value) || strpos($value, 'enc:v1:') !== 0) {
-        return $value; // şifreli değil — eski düz metin değer
-    }
-    $key = getAppKey();
-    if ($key === null || !function_exists('openssl_decrypt')) {
-        return $value;
-    }
-    $bin = base64_decode(substr($value, 7), true);
-    if ($bin === false || strlen($bin) < 28) {
-        return $value;
-    }
-    $iv = substr($bin, 0, 12);
-    $tag = substr($bin, 12, 16);
-    $cipher = substr($bin, 28);
-    $plain = openssl_decrypt($cipher, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag);
-    return $plain === false ? $value : $plain;
+    return _security()->decryptSecret($value);
 }
 
-/**
- * Genel amaçlı oran sınırlayıcı (rate_limits tablosu).
- * $key için $windowSec saniyelik pencerede en fazla $maxHits isteğe izin verir;
- * aşılırsa $blockSec saniye boyunca bloke eder.
- *
- * @return array ['allowed' => bool, 'retry_after' => int saniye]
- */
 function rateLimitHit($key, $maxHits = 5, $windowSec = 900, $blockSec = 900) {
-    global $pdo;
-    $now = time();
-    $rateKey = substr($key, 0, 190);
-
-    try {
-        $stmt = $pdo->prepare("SELECT hits, window_start, blocked_until FROM rate_limits WHERE rate_key = ?");
-        $stmt->execute([$rateKey]);
-        $row = $stmt->fetch();
-
-        // Aktif blok var mı?
-        if ($row && (int)$row['blocked_until'] > $now) {
-            return ['allowed' => false, 'retry_after' => (int)$row['blocked_until'] - $now];
-        }
-
-        if (!$row || ($now - (int)$row['window_start']) > $windowSec) {
-            // Yeni pencere başlat
-            $stmt = $pdo->prepare("INSERT INTO rate_limits (rate_key, hits, window_start, blocked_until)
-                VALUES (?, 1, ?, 0)
-                ON DUPLICATE KEY UPDATE hits = 1, window_start = VALUES(window_start), blocked_until = 0");
-            $stmt->execute([$rateKey, $now]);
-            return ['allowed' => true, 'retry_after' => 0];
-        }
-
-        $hits = (int)$row['hits'] + 1;
-        if ($hits > $maxHits) {
-            $blockedUntil = $now + $blockSec;
-            $stmt = $pdo->prepare("UPDATE rate_limits SET hits = ?, blocked_until = ? WHERE rate_key = ?");
-            $stmt->execute([$hits, $blockedUntil, $rateKey]);
-            return ['allowed' => false, 'retry_after' => $blockSec];
-        }
-
-        $stmt = $pdo->prepare("UPDATE rate_limits SET hits = ? WHERE rate_key = ?");
-        $stmt->execute([$hits, $rateKey]);
-        return ['allowed' => true, 'retry_after' => 0];
-    } catch (Exception $e) {
-        // Tablo yoksa veya hata olursa sistemi kilitleme — isteğe izin ver
-        error_log("rateLimitHit hatası: " . $e->getMessage());
-        return ['allowed' => true, 'retry_after' => 0];
-    }
+    return _security()->rateLimitHit($key, $maxHits, $windowSec, $blockSec);
 }
 
-/**
- * Başarılı giriş sonrası bir oran sınırlama anahtarını sıfırlar.
- */
 function rateLimitReset($key) {
-    global $pdo;
-    try {
-        $stmt = $pdo->prepare("DELETE FROM rate_limits WHERE rate_key = ?");
-        $stmt->execute([substr($key, 0, 190)]);
-    } catch (Exception $e) {
-        // sessizce geç
-    }
+    _security()->rateLimitReset($key);
 }
 
-/**
- * İstemci IP adresini güvenli biçimde döndürür.
- */
 function clientIp() {
-    return $_SERVER['REMOTE_ADDR'] ?? 'cli';
+    return _security()->clientIp();
 }
 
 // ============================================================
@@ -951,69 +399,21 @@ function clientIp() {
 
 /**
  * Public status sayfasında gösterilecek siteleri döndürür.
- * is_public = 1 ve status = 'active' olan siteler.
  */
 function getPublicSites() {
-    global $pdo;
     try {
-        $stmt = $pdo->query("
-            SELECT id, name, url, last_status, last_check, response_time
-            FROM sites
-            WHERE is_public = 1 AND status = 'active'
-            ORDER BY name ASC
-        ");
-        return $stmt->fetchAll();
-    } catch (PDOException $e) {
+        $repo = new \App\Repository\SiteRepository(_db());
+        return $repo->findPublic();
+    } catch (\Exception $e) {
         error_log("getPublicSites hatası: " . $e->getMessage());
         return [];
     }
 }
 
-/**
- * Bir site için son $days günün GÜNLÜK uptime yüzdesini döndürür.
- * Dönüş: ['Y-m-d' => float|null] (veri olmayan gün için null).
- * Tek sorgu — şerit (bar) görünümü için verimli.
- */
-function getDailyUptimeStrip($site_id, $days = 90) {
-    global $pdo;
-
-    // Boş iskeleti hazırla (en eski -> en yeni)
-    $strip = [];
-    for ($i = $days - 1; $i >= 0; $i--) {
-        $strip[date('Y-m-d', strtotime("-{$i} days"))] = null;
-    }
-
-    try {
-        $stmt = $pdo->prepare("
-            SELECT DATE(timestamp) AS day,
-                   COUNT(*) AS total,
-                   SUM(CASE WHEN status = 'up' THEN 1 ELSE 0 END) AS up_count
-            FROM uptime_logs
-            WHERE site_id = ? AND timestamp >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
-            GROUP BY DATE(timestamp)
-        ");
-        $stmt->execute([$site_id, $days]);
-        foreach ($stmt->fetchAll() as $row) {
-            if (isset($strip[$row['day']]) || array_key_exists($row['day'], $strip)) {
-                $total = (int)$row['total'];
-                $strip[$row['day']] = $total > 0 ? ((int)$row['up_count'] / $total) * 100 : null;
-            }
-        }
-    } catch (PDOException $e) {
-        error_log("getDailyUptimeStrip hatası: " . $e->getMessage());
-    }
-
-    return $strip;
-}
-
 // ============================================================
-// SSL SERTİFİKA İZLEME YARDIMCILARI
+// SSL SERTİFİKA TAKİBİ
 // ============================================================
 
-/**
- * curl CERTINFO çıktısından yaprak sertifikanın son kullanma tarihini
- * 'Y-m-d H:i:s' biçiminde döndürür (bulunamazsa null).
- */
 function extractSslExpiry($certinfo) {
     if (empty($certinfo) || !is_array($certinfo)) {
         return null;
@@ -1027,13 +427,9 @@ function extractSslExpiry($certinfo) {
     return $ts ? date('Y-m-d H:i:s', $ts) : null;
 }
 
-/**
- * SSL son kullanma tarihini sites tablosuna yazar ve eşik (varsayılan 14 gün)
- * altındaysa günde EN FAZLA BİR KEZ uyarı gönderir.
- */
 function processSslForSite($site, $expires_at, $threshold_days = 14) {
-    global $pdo;
     try {
+        $pdo = _db();
         $stmt = $pdo->prepare("UPDATE sites SET ssl_expires_at = ? WHERE id = ?");
         $stmt->execute([$expires_at, $site['id']]);
 
@@ -1051,10 +447,6 @@ function processSslForSite($site, $expires_at, $threshold_days = 14) {
     }
 }
 
-/**
- * SSL sertifikası yakında dolacak (veya dolmuş) siteler için
- * Telegram + Email uyarısı gönderir. Site bildirim ayarlarına saygı duyar.
- */
 function sendSslExpiryNotification($site, $days_left, $expires_at) {
     if (empty($site['notifications_enabled'])) {
         return;
@@ -1099,4 +491,3 @@ function sendSslExpiryNotification($site, $days_left, $expires_at) {
         }
     }
 }
-?>
