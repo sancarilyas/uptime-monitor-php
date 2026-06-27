@@ -158,8 +158,126 @@
         }
     });
 
+    // ================== TOPLU SEÇİM / SİLME ==================
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const selectAllMain = document.getElementById('selectAllSites');
+        const selectAllTable = document.getElementById('selectAllSitesTable');
+        const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+        const selectedCountInfo = document.getElementById('selectedCountInfo');
+        const selectedCountEl = document.getElementById('selectedCount');
+
+        if (!bulkDeleteBtn) return; // Site yoksa çık
+
+        // Yalnızca o anda görünen (aramayla gizlenmemiş) checkbox'ları döndür
+        function visibleCheckboxes() {
+            return Array.from(document.querySelectorAll('.site-select-checkbox')).filter(cb => {
+                const wrapper = cb.closest('.col-lg-4') || cb.closest('tr');
+                return !wrapper || wrapper.style.display !== 'none';
+            });
+        }
+
+        function getSelectedIds() {
+            // Aynı site hem kartta hem tabloda olduğundan ID'leri tekilleştir
+            const ids = new Set();
+            document.querySelectorAll('.site-select-checkbox:checked').forEach(cb => ids.add(cb.value));
+            return Array.from(ids);
+        }
+
+        function updateBulkUI() {
+            const ids = getSelectedIds();
+            const count = ids.length;
+            bulkDeleteBtn.disabled = count === 0;
+            if (selectedCountEl) selectedCountEl.textContent = count;
+            if (selectedCountInfo) selectedCountInfo.style.display = count > 0 ? 'inline' : 'none';
+
+            const visible = visibleCheckboxes();
+            const allChecked = visible.length > 0 && visible.every(cb => cb.checked);
+            [selectAllMain, selectAllTable].forEach(sa => {
+                if (sa) {
+                    sa.checked = allChecked;
+                    sa.indeterminate = count > 0 && !allChecked;
+                }
+            });
+        }
+
+        // ID'ye göre kart ve tablo checkbox'larını birlikte işaretle
+        function setCheckedById(id, checked) {
+            document.querySelectorAll('.site-select-checkbox[value="' + id + '"]').forEach(cb => {
+                cb.checked = checked;
+            });
+        }
+
+        document.querySelectorAll('.site-select-checkbox').forEach(cb => {
+            cb.addEventListener('change', function () {
+                setCheckedById(this.value, this.checked);
+                updateBulkUI();
+            });
+        });
+
+        function handleSelectAll(checked) {
+            visibleCheckboxes().forEach(cb => setCheckedById(cb.value, checked));
+            updateBulkUI();
+        }
+
+        if (selectAllMain) {
+            selectAllMain.addEventListener('change', function () { handleSelectAll(this.checked); });
+        }
+        if (selectAllTable) {
+            selectAllTable.addEventListener('change', function () { handleSelectAll(this.checked); });
+        }
+
+        // Silme onay modalı
+        bulkDeleteBtn.addEventListener('click', function () {
+            const ids = getSelectedIds();
+            if (ids.length === 0) return;
+            const countEl = document.getElementById('bulkDeleteCount');
+            if (countEl) countEl.textContent = ids.length;
+            new bootstrap.Modal(document.getElementById('bulkDeleteModal')).show();
+        });
+
+        const confirmBtn = document.getElementById('confirmBulkDelete');
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', function () {
+                const ids = getSelectedIds();
+                if (ids.length === 0) return;
+
+                const originalText = this.innerHTML;
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Siliniyor...';
+
+                fetch(base_url + 'pages/ajax/bulk_delete_sites.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ site_ids: ids })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showSuccess('Silindi!', data.message);
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('bulkDeleteModal'));
+                        if (modal) modal.hide();
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showError('Hata!', data.message);
+                    }
+                })
+                .catch(err => {
+                    console.error('Toplu silme hatası:', err);
+                    showError('Hata!', 'Database error');
+                })
+                .finally(() => {
+                    this.disabled = false;
+                    this.innerHTML = originalText;
+                });
+            });
+        }
+
+        updateBulkUI();
+    });
+
     // ================== ARAMA FONKSİYONLARI ==================
-    
+
     let searchTimeout = null;
     
     // Site arama fonksiyonu

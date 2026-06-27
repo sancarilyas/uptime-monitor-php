@@ -181,6 +181,26 @@ include __DIR__ . '/../../includes/layout/header.php';
         <button type="button" class="btn-close btn-close-sm float-end" onclick="clearSiteSearch()" style="font-size: 0.7rem; padding: 0.25rem;"></button>
     </div>
 
+    <!-- Toplu İşlem Araç Çubuğu -->
+    <?php if (!empty($sites)): ?>
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="selectAllSites">
+                    <label class="form-check-label" for="selectAllSites"><?= __('select_all') ?? 'Tümünü seç' ?></label>
+                </div>
+                <span id="selectedCountInfo" class="text-muted small" style="display:none;">
+                    <span id="selectedCount">0</span> <?= __('selected') ?? 'seçili' ?>
+                </span>
+                <button type="button" id="bulkDeleteBtn" class="btn btn-danger btn-sm" disabled>
+                    <i class="fas fa-trash"></i> <?= __('delete_selected') ?? 'Seçilenleri sil' ?>
+                </button>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <!-- Site Listesi -->
     <?php if (empty($sites)): ?>
         <div class="col-12">
@@ -206,6 +226,9 @@ include __DIR__ . '/../../includes/layout/header.php';
                     <div class="card site-card h-100 <?= $status_class ?>" data-site-id="<?= $site['id'] ?>" style="cursor: pointer;" onclick="window.location.href='<?= $base_url ?>sites/detail?id=<?= $site['id'] ?>'">
                         <div class="card-body">
                             <div class="card-title-container mb-2">
+                                <div class="form-check me-2" onclick="event.stopPropagation();">
+                                    <input class="form-check-input site-select-checkbox" type="checkbox" value="<?= $site['id'] ?>" aria-label="Seç">
+                                </div>
                                 <h5 class="card-title mb-0" title="<?= htmlspecialchars($site['name']) ?>"><?= htmlspecialchars($site['name']) ?></h5>
                                 <div class="dropdown" onclick="event.stopPropagation();">
                                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
@@ -272,6 +295,9 @@ include __DIR__ . '/../../includes/layout/header.php';
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
+                                    <th width="3%" class="text-center" onclick="event.stopPropagation();">
+                                        <input class="form-check-input" type="checkbox" id="selectAllSitesTable" aria-label="Tümünü seç">
+                                    </th>
                                     <th width="20%"><?= __('site_name') ?></th>
                                     <th width="30%"><?= __('url') ?></th>
                                     <th width="15%"><?= __('status') ?></th>
@@ -289,6 +315,9 @@ include __DIR__ . '/../../includes/layout/header.php';
                                     $status_color = $site['last_status'] === 'up' ? 'success' : 'danger';
                                     ?>
                                     <tr class="<?= $status_class ?>-row" data-site-id="<?= $site['id'] ?>" style="cursor: pointer;" onclick="window.location.href='<?= $base_url ?>sites/detail?id=<?= $site['id'] ?>'">
+                                        <td class="text-center" onclick="event.stopPropagation();">
+                                            <input class="form-check-input site-select-checkbox" type="checkbox" value="<?= $site['id'] ?>" aria-label="Seç">
+                                        </td>
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <span class="status-indicator status-<?= $status_class ?> me-2"></span>
@@ -584,6 +613,28 @@ include __DIR__ . '/../../includes/layout/header.php';
         </div>
     </div>
 </div>
+<!-- Toplu Silme Modal -->
+<div class="modal fade" id="bulkDeleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">
+                    <i class="fas fa-exclamation-triangle"></i> <?= __('delete_selected') ?? 'Seçilenleri sil' ?>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong id="bulkDeleteCount">0</strong> <?= __('sites_will_be_deleted') ?? 'site silinecek. Emin misiniz?' ?></p>
+                <p class="text-muted small"><?= __('delete_warning') ?></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= __('cancel') ?></button>
+                <button type="button" class="btn btn-danger" id="confirmBulkDelete"><?= __('delete') ?></button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="<?= $base_url ?>assets/js/sites.js?t=<?= time() ?>"></script>
 
 <?php
