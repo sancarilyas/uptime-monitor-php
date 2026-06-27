@@ -17,8 +17,10 @@ if (!$site) {
     if (!$site) return;
 }
 
-// Uptime hesapla (tek sorgu)
-$uptime_24h = calculateUptime($site_id, 1);
+// Uptime hesapla — çağıran sayfa zaten hesapladıysa yeniden hesaplama (PERFORMANS)
+if (!isset($uptime_24h)) {
+    $uptime_24h = calculateUptime($site_id, 1);
+}
 $status_color = $site['last_status'] === 'up' ? '#28a745' : '#dc3545';
 $status_text = $site['last_status'] === 'up' ? 'ÇALIŞIYOR' : 'KESİNTİ';
 $status_icon = $site['last_status'] === 'up' ? 'fa-check-circle' : 'fa-times-circle';

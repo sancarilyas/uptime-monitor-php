@@ -121,11 +121,13 @@ $active_sites = 0;
 $total_uptime = 0;
 
 $dashboard_groups = [];
+$uptime_map = []; // PERFORMANS: 24s uptime'ı site başına BİR kez hesapla, her yerde yeniden kullan
 foreach ($sites as $site) {
     if ($site['last_status'] === 'up') {
         $active_sites++;
     }
     $uptime_24h = calculateUptime($site['id'], 1);
+    $uptime_map[$site['id']] = $uptime_24h;
     $total_uptime += $uptime_24h;
     if (!empty($site['group_name'])) {
         $dashboard_groups[$site['group_name']] = true;
@@ -330,7 +332,7 @@ include __DIR__ . '/../../includes/layout/header.php';
             <div class="row g-3">
                 <?php foreach ($sites as $site): ?>
                     <?php
-                    $uptime_24h = calculateUptime($site['id'], 1);
+                    $uptime_24h = $uptime_map[$site['id']] ?? calculateUptime($site['id'], 1);
                     $status_class = $site['last_status'] === 'up' ? 'up' : 'down';
                     $status_text = $site['last_status'] === 'up' ? __('up') : __('down');
                     $status_color = $site['last_status'] === 'up' ? 'success' : 'danger';
@@ -431,8 +433,8 @@ include __DIR__ . '/../../includes/layout/header.php';
                     </thead>
                     <tbody>
                         <?php foreach ($sites as $site): ?>
-                            <?php 
-                            $uptime_24h = calculateUptime($site['id'], 1);
+                            <?php
+                            $uptime_24h = $uptime_map[$site['id']] ?? calculateUptime($site['id'], 1);
                             $status_class = $site['last_status'] === 'up' ? 'up' : 'down';
                             $status_text = $site['last_status'] === 'up' ? __('up') : __('down');
                             $status_color = $site['last_status'] === 'up' ? 'success' : 'danger';

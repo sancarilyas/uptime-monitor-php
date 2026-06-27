@@ -169,6 +169,19 @@ function migrateSchema($pdo)
             error_log("migrateSchema {$name} hatası: " . $e->getMessage());
         }
     }
+
+    // uptime_logs için bileşik index (site_id, timestamp) — sorgu performansı için KRİTİK.
+    // SHOW INDEX kontrolü anlıktır; yoksa bir kez oluşturulur (çok büyük tabloda ilk
+    // istek birkaç saniye sürebilir, sonra kalıcıdır). Büyük tablolar için manuel:
+    // php tools/optimize_db.php
+    try {
+        $has_idx = $pdo->query("SHOW INDEX FROM uptime_logs WHERE Key_name = 'idx_site_time'")->fetch();
+        if (!$has_idx) {
+            $pdo->exec("ALTER TABLE uptime_logs ADD INDEX idx_site_time (site_id, timestamp)");
+        }
+    } catch (PDOException $e) {
+        error_log("migrateSchema idx_site_time hatası: " . $e->getMessage());
+    }
 }
 
 migrateSchema($pdo);

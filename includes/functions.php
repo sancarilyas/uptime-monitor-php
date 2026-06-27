@@ -394,6 +394,40 @@ function clientIp() {
 }
 
 // ============================================================
+// LOG SAKLAMA (RETENTION) — sınırsız büyümeyi önler
+// ============================================================
+
+/**
+ * $days günden eski uptime_logs kayıtlarını TEK BATCH halinde siler (kilidi kısa tutar).
+ * @return int silinen satır sayısı
+ */
+function purgeOldLogs($days = 90, $limit = 20000) {
+    global $pdo;
+    $days = (int)$days;
+    $limit = (int)$limit;
+    try {
+        $stmt = $pdo->prepare("DELETE FROM uptime_logs WHERE timestamp < DATE_SUB(NOW(), INTERVAL ? DAY) LIMIT {$limit}");
+        $stmt->execute([$days]);
+        return $stmt->rowCount();
+    } catch (Exception $e) {
+        error_log("purgeOldLogs hatası: " . $e->getMessage());
+        return 0;
+    }
+}
+
+/**
+ * Günde en fazla bir kez eski log temizliği yapar (monitor turlarından çağrılır).
+ * İlk büyük temizlik/index için: php tools/optimize_db.php
+ */
+function maybePurgeOldLogs($days = 90) {
+    if (getSystemSetting('last_log_purge') === date('Y-m-d')) {
+        return; // bugün zaten yapıldı
+    }
+    purgeOldLogs($days, 20000);
+    setSystemSetting('last_log_purge', date('Y-m-d'));
+}
+
+// ============================================================
 // PUBLIC STATUS SAYFASI YARDIMCILARI
 // ============================================================
 

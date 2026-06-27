@@ -154,7 +154,14 @@ try {
     } catch (Exception $e) {
         logMessage("[ERROR] Sistem ayarlari guncellenemedi: " . $e->getMessage());
     }
-    
+
+    // Günde bir kez eski logları temizle (sınırsız büyümeyi önler)
+    try {
+        maybePurgeOldLogs(90);
+    } catch (Exception $e) {
+        logMessage("[ERROR] Log temizligi: " . $e->getMessage());
+    }
+
     logMessage("[DONE] Tamamlandi. Durum degisimi: {$status_changes}");
     
 } catch (Exception $e) {
