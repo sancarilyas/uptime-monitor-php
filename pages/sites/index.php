@@ -104,6 +104,9 @@ $stmt = $pdo->prepare("
 $stmt->execute([$_SESSION['user_id'], $user_group_id]);
 $sites = $stmt->fetchAll();
 
+// PERFORMANS: 24s uptime'ı tüm siteler için TEK sorguda hesapla (N sorgu yerine 1).
+$uptime_map = calculateUptimeForSites(array_column($sites, 'id'), 1);
+
 // Sayfa başlığı
 $page_title = __('my_sites');
 $page_description = __('site_management');
@@ -216,8 +219,8 @@ include __DIR__ . '/../../includes/layout/header.php';
         <!-- Kart Görünümü -->
         <div id="cardViewContainer" class="row">
             <?php foreach ($sites as $site): ?>
-                <?php 
-                $uptime_24h = calculateUptime($site['id'], 1);
+                <?php
+                $uptime_24h = $uptime_map[$site['id']] ?? 0.0;
                 $status_class = $site['last_status'] === 'up' ? 'up' : 'down';
                 $status_text = $site['last_status'] === 'up' ? __('up') : __('down');
                 $status_color = $site['last_status'] === 'up' ? 'success' : 'danger';
@@ -308,8 +311,8 @@ include __DIR__ . '/../../includes/layout/header.php';
                             </thead>
                             <tbody>
                                 <?php foreach ($sites as $site): ?>
-                                    <?php 
-                                    $uptime_24h = calculateUptime($site['id'], 1);
+                                    <?php
+                                    $uptime_24h = $uptime_map[$site['id']] ?? 0.0;
                                     $status_class = $site['last_status'] === 'up' ? 'up' : 'down';
                                     $status_text = $site['last_status'] === 'up' ? __('up') : __('down');
                                     $status_color = $site['last_status'] === 'up' ? 'success' : 'danger';
@@ -635,7 +638,7 @@ include __DIR__ . '/../../includes/layout/header.php';
     </div>
 </div>
 
-<script src="<?= $base_url ?>assets/js/sites.js?t=<?= time() ?>"></script>
+<script src="<?= $base_url ?>assets/js/sites.js?v=<?= filemtime(__DIR__ . '/../../assets/js/sites.js') ?>"></script>
 
 <?php
 // Footer'ı dahil et

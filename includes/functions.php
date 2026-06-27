@@ -299,6 +299,23 @@ function calculateUptime($site_id, $days = 30) {
     return $repo->calculateUptime($site_id, $days);
 }
 
+/**
+ * Birden fazla sitenin uptime yüzdesini TEK sorguda hesaplar.
+ * Site listesi sayfalarında foreach + calculateUptime yerine bunu kullanın —
+ * N site için N sorgu yerine 1 sorgu (büyük uptime_logs tablosunda kritik).
+ *
+ * @param int[] $site_ids
+ * @param int   $days
+ * @return array<int,float> [site_id => yüzde]
+ */
+function calculateUptimeForSites(array $site_ids, int $days = 1): array {
+    if (empty($site_ids)) {
+        return [];
+    }
+    $repo = new \App\Repository\UptimeLogRepository(_db());
+    return $repo->calculateUptimeForSites($site_ids, $days);
+}
+
 function getDailyUptimeStrip($site_id, $days = 90) {
     $repo = new \App\Repository\UptimeLogRepository(_db());
     return $repo->getDailyUptimeStrip($site_id, $days);

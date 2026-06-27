@@ -112,14 +112,21 @@ function stripLevel($pct) {
                    ayarlarından <strong>“Public status sayfasında göster”</strong> seçeneğini etkinleştirin.</p>
             </div>
         <?php else: ?>
+            <!-- PERFORMANS: 1/7/30 günlük uptime'ı tüm siteler için 3 sorguda (N*3 yerine 3) hesapla -->
+            <?php
+            $status_site_ids = array_column($sites, 'id');
+            $uptime_map_1  = calculateUptimeForSites($status_site_ids, 1);
+            $uptime_map_7  = calculateUptimeForSites($status_site_ids, 7);
+            $uptime_map_30 = calculateUptimeForSites($status_site_ids, 30);
+            ?>
             <!-- Servis listesi -->
             <section class="status-list" aria-label="Servis durumları">
                 <?php foreach ($sites as $site): ?>
                     <?php
                     $is_up   = ($site['last_status'] ?? 'up') !== 'down';
-                    $u24 = calculateUptime($site['id'], 1);
-                    $u7  = calculateUptime($site['id'], 7);
-                    $u30 = calculateUptime($site['id'], 30);
+                    $u24 = $uptime_map_1[$site['id']] ?? 0.0;
+                    $u7  = $uptime_map_7[$site['id']] ?? 0.0;
+                    $u30 = $uptime_map_30[$site['id']] ?? 0.0;
                     $strip = getDailyUptimeStrip($site['id'], 90);
                     $host = parse_url($site['url'], PHP_URL_HOST) ?: $site['url'];
                     ?>

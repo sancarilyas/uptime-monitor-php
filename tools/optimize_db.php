@@ -5,13 +5,14 @@
  * Çok fazla log biriktiğinde sistemin yavaşlamasını/kilitlenmesini giderir:
  *   1. uptime_logs için bileşik index (site_id, timestamp) ekler — en büyük kazanç.
  *   2. Eski uptime_logs kayıtlarını saklama süresine göre temizler (batch'li).
- *   3. notification_logs için de saklama temizliği yapar.
+ *   3. alerts tablosunu da aynı şekilde temizler + index ekler.
+ *   4. notification_logs için de saklama temizliği yapar.
  *
  * Büyük tablolarda (milyonlarca satır) index oluşturma ve silme uzun sürebilir;
  * bu yüzden web isteğinde DEĞİL, burada (CLI) çalıştırılır.
  *
  * Kullanım:
- *   php tools/optimize_db.php                 # index + 90 günden eski logları temizle
+ *   php tools/optimize_db.php                 # index + 30 günden eski logları temizle
  *   php tools/optimize_db.php --days=60       # 60 günden eskileri temizle
  *   php tools/optimize_db.php --no-purge      # sadece index ekle, silme yapma
  *   php tools/optimize_db.php --optimize      # sonunda OPTIMIZE TABLE çalıştır (disk geri kazanımı)
@@ -27,7 +28,7 @@ require_once __DIR__ . '/../config/env.php';
 require_once __DIR__ . '/../config/database.php';
 
 // --- Argümanlar ---
-$days = 90;
+$days = 30;
 $do_purge = true;
 $do_optimize = false;
 foreach ($argv as $arg) {
@@ -61,6 +62,24 @@ try {
 }
 
 // ============================================================
+// 1b) alerts için bileşik index (site_id, timestamp)
+// ============================================================
+try {
+    $has_alert_index = (bool)$pdo->query("SHOW INDEX FROM alerts WHERE Key_name = 'idx_site_time'")->fetch();
+
+    if ($has_alert_index) {
+        out("✓ alerts.idx_site_time index zaten mevcut.");
+    } else {
+        out("→ alerts.idx_site_time (site_id, timestamp) ekleniyor...");
+        $t1 = microtime(true);
+        $pdo->exec("ALTER TABLE alerts ADD INDEX idx_site_time (site_id, timestamp)");
+        out(sprintf("✓ alerts index eklendi (%.1f sn).", microtime(true) - $t1));
+    }
+} catch (PDOException $e) {
+    out("✗ alerts index hatası: " . $e->getMessage());
+}
+
+// ============================================================
 // 2) Eski uptime_logs temizliği (batch'li — kilidi uzun tutmamak için)
 // ============================================================
 if ($do_purge) {
@@ -87,6 +106,33 @@ if ($do_purge) {
         out("✗ uptime_logs temizlik hatası: " . $e->getMessage());
     }
 
+    // ============================================================
+    // 3) alerts temizliği (monitor her kontrolde yazıyordu — gereksiz çift veri)
+    // ============================================================
+    try {
+        $before_alerts = (int)$pdo->query("SELECT COUNT(*) FROM alerts")->fetchColumn();
+        if ($before_alerts > 0) {
+            out("alerts satır sayısı: " . number_format($before_alerts));
+            out("→ {$days} günden eski alerts kayıtları temizleniyor (batch: 20.000)...");
+            $stmtAlerts = $pdo->prepare("DELETE FROM alerts WHERE timestamp < DATE_SUB(NOW(), INTERVAL ? DAY) LIMIT 20000");
+            $al_deleted = 0;
+            do {
+                $stmtAlerts->execute([$days]);
+                $n = $stmtAlerts->rowCount();
+                $al_deleted += $n;
+                if ($n > 0) {
+                    out("  ... " . number_format($al_deleted) . " alerts kaydı silindi");
+                    usleep(100000); // 0.1 sn — DB'ye nefes aldır
+                }
+            } while ($n > 0);
+            out("✓ alerts temizlendi: " . number_format($al_deleted) . " silindi");
+        } else {
+            out("✓ alerts tablosu zaten boş.");
+        }
+    } catch (PDOException $e) {
+        out("✗ alerts temizlik hatası: " . $e->getMessage());
+    }
+
     // notification_logs temizliği (varsa)
     try {
         $stmt = $pdo->prepare("DELETE FROM notification_logs WHERE sent_at < DATE_SUB(NOW(), INTERVAL ? DAY) LIMIT 20000");
@@ -109,8 +155,9 @@ if ($do_purge) {
 // ============================================================
 if ($do_optimize) {
     try {
-        out("→ OPTIMIZE TABLE uptime_logs... (tabloyu geçici kilitler)");
+        out("→ OPTIMIZE TABLE uptime_logs, alerts... (tabloları geçici kilitler)");
         $pdo->exec("OPTIMIZE TABLE uptime_logs");
+        $pdo->exec("OPTIMIZE TABLE alerts");
         out("✓ OPTIMIZE tamamlandı.");
     } catch (PDOException $e) {
         out("✗ OPTIMIZE hatası: " . $e->getMessage());

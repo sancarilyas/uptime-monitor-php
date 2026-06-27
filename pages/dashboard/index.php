@@ -121,12 +121,13 @@ $active_sites = 0;
 $total_uptime = 0;
 
 $dashboard_groups = [];
-$uptime_map = []; // PERFORMANS: 24s uptime'ı site başına BİR kez hesapla, her yerde yeniden kullan
+// PERFORMANS: 24s uptime'ı tüm siteler için TEK sorguda hesapla (N sorgu yerine 1).
+$uptime_map = $siteService->getUptimeMap(array_column($sites, 'id'), 1);
 foreach ($sites as $site) {
     if ($site['last_status'] === 'up') {
         $active_sites++;
     }
-    $uptime_24h = calculateUptime($site['id'], 1);
+    $uptime_24h = $uptime_map[$site['id']] ?? 0.0;
     $uptime_map[$site['id']] = $uptime_24h;
     $total_uptime += $uptime_24h;
     if (!empty($site['group_name'])) {
@@ -147,10 +148,7 @@ include __DIR__ . '/../../includes/layout/header.php';
 ?>
 
 <!-- Cache temizleme için meta tag -->
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<meta name="version" content="<?= time() ?>">
+<meta name="version" content="<?= filemtime(__DIR__ . '/../../assets/css/dashboard.css') ?>">
 <link rel="stylesheet" href="./assets/css/dashboard.css">
  
  
@@ -817,7 +815,7 @@ include __DIR__ . '/../../includes/layout/header.php';
     </div>
 </div>
 
-<script src="<?= $base_url ?>assets/js/dashboard.js?t=<?= time() ?>"></script>
+<script src="<?= $base_url ?>assets/js/dashboard.js?v=<?= filemtime(__DIR__ . '/../../assets/js/dashboard.js') ?>"></script>
 
  
 

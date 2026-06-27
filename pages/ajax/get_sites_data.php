@@ -35,10 +35,13 @@ try {
     $stmt->execute([$user_id]);
     $sites = $stmt->fetchAll();
 
+    // PERFORMANS: 24s uptime'ı tüm siteler için TEK sorguda hesapla (N sorgu yerine 1).
+    $uptime_map = calculateUptimeForSites(array_column($sites, 'id'), 1);
+
     // Her site için veri hazırla
     $sitesData = [];
     foreach ($sites as $site) {
-        $uptime_24h = calculateUptime($site['id'], 1);
+        $uptime_24h = $uptime_map[$site['id']] ?? 0.0;
         $status_class = $site['last_status'] === 'up' ? 'up' : 'down';
         $status_color = $site['last_status'] === 'up' ? 'success' : 'danger';
         

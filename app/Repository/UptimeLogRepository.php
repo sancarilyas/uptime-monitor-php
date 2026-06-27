@@ -18,11 +18,16 @@ final class UptimeLogRepository
     }
 
     /**
-     * Yeni uptime log kaydı + alert kaydı ekle.
+     * Yeni uptime log kaydı ekle.
      * Kaynak: includes/functions.php -> logSiteStatus()
      *
      * NOT: Bu metod DB'ye log YAZAR. JSON dosya yedeği de güncellenir
      * (geriye dönük uyumluluk için).
+     *
+     * PERFORMANS: Artık `alerts` tablosuna çift kayıt YAZMIYOR — monitor her
+     * kontrolde uptime_logs'a zaten yazıyor; alerts aynı verinin gereksiz
+     * kopyasıydı ve tabloyu şişiriyordu. Eski alerts verisi optimize_db.php
+     * ile temizlenir.
      */
     public function logStatus(int $siteId, string $status, ?int $responseTime, ?int $httpCode, ?string $error = null): void
     {
@@ -38,18 +43,6 @@ final class UptimeLogRepository
 
         // JSON log dosyasına yedek yaz (eski davranış korunuyor)
         $this->writeJsonBackup($siteId, $status, $responseTime, $httpCode, $error);
-
-        // alerts tablosuna da yaz
-        try {
-            $message = $status === 'up' ? 'Site çalışıyor' : 'Site kesintide';
-            if ($error) {
-                $message .= ' - ' . $error;
-            }
-            $stmt = $this->pdo->prepare("INSERT INTO alerts (site_id, status, message, timestamp) VALUES (?, ?, ?, NOW())");
-            $stmt->execute([$siteId, $status, $message]);
-        } catch (\Exception $e) {
-            error_log("Alert kaydetme hatası: " . $e->getMessage());
-        }
     }
 
     /**
@@ -81,6 +74,53 @@ final class UptimeLogRepository
         } catch (\Exception $e) {
             error_log("Uptime hesaplama hatası: " . $e->getMessage());
             return 0.0;
+        }
+    }
+
+    /**
+     * Birden fazla sitenin uptime yüzdesini TEK sorguda hesaplar.
+     * PERFORMANS: Site listelerinde (dashboard, sites, status, admin)
+     * foreach içinde calculateUptime() çağırmak yerine bunu kullanın —
+     * N site için N sorgu yerine 1 sorgu.
+     *
+     * @param int[] $siteIds Boş olabilir → boş harita döner
+     * @param int   $days    Kaç günlük pencere
+     * @return array<int,float> [site_id => yüzde] — kaydı olmayan site dahil değildir
+     */
+    public function calculateUptimeForSites(array $siteIds, int $days = 1): array
+    {
+        $siteIds = array_filter(array_map('intval', $siteIds));
+        if (empty($siteIds)) {
+            return [];
+        }
+
+        // IN (...) için placeholder'ları oluştur
+        $placeholders = implode(',', array_fill(0, count($siteIds), '?'));
+
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT site_id,
+                       COUNT(*) AS total_checks,
+                       SUM(CASE WHEN status = 'up' THEN 1 ELSE 0 END) AS up_checks
+                FROM uptime_logs
+                WHERE site_id IN ({$placeholders})
+                  AND timestamp >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                GROUP BY site_id
+            ");
+            $params = array_merge($siteIds, [$days]);
+            $stmt->execute($params);
+
+            $map = [];
+            foreach ($stmt->fetchAll() as $row) {
+                $total = (int)$row['total_checks'];
+                if ($total > 0) {
+                    $map[(int)$row['site_id']] = ((int)$row['up_checks'] / $total) * 100;
+                }
+            }
+            return $map;
+        } catch (\Exception $e) {
+            error_log("calculateUptimeForSites hatası: " . $e->getMessage());
+            return [];
         }
     }
 

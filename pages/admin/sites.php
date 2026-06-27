@@ -54,6 +54,9 @@ $stmt = $pdo->prepare("
 $stmt->execute();
 $sites = $stmt->fetchAll();
 
+// PERFORMANS: 24s uptime'ı tüm siteler için TEK sorguda hesapla (N sorgu yerine 1).
+$uptime_map = calculateUptimeForSites(array_column($sites, 'id'), 1);
+
 // Sayfa başlığı
 $page_title = __('all_sites');
 $page_description = __('site_management_desc');
@@ -108,8 +111,8 @@ include __DIR__ . '/../../includes/layout/header.php';
                             </thead>
                             <tbody>
                                 <?php foreach ($sites as $site): ?>
-                                    <?php 
-                                    $uptime_24h = calculateUptime($site['id'], 1);
+                                    <?php
+                                    $uptime_24h = $uptime_map[$site['id']] ?? 0.0;
                                     $status_class = $site['last_status'] === 'up' ? 'up' : 'down';
                                     $status_text = $site['last_status'] === 'up' ? __('up') : __('down');
                                     $status_color = $site['last_status'] === 'up' ? 'success' : 'danger';

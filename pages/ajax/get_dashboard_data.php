@@ -45,20 +45,23 @@ try {
     ");
     $stmt->execute([$user_id, $user_group_id]);
     $sites = $stmt->fetchAll();
-    
+
     // İstatistikleri hesapla
     $total_sites = count($sites);
     $active_sites = 0;
     $total_uptime = 0;
-    
+
+    // PERFORMANS: 24s uptime'ı tüm siteler için TEK sorguda hesapla (N sorgu yerine 1).
+    $uptime_map = calculateUptimeForSites(array_column($sites, 'id'), 1);
+
     $sites_data = [];
-    
+
     foreach ($sites as $site) {
         if ($site['last_status'] === 'up') {
             $active_sites++;
         }
-        
-        $uptime_24h = calculateUptime($site['id'], 1);
+
+        $uptime_24h = $uptime_map[$site['id']] ?? 0.0;
         $total_uptime += $uptime_24h;
         
         // Her site için veri hazırla

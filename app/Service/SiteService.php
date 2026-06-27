@@ -88,6 +88,18 @@ final class SiteService
     }
 
     /**
+     * Birden fazla sitenin uptime yüzdesini TEK sorguda hesaplar.
+     * Site listesi sayfalarında foreach + calculateUptime yerine bunu kullanın.
+     *
+     * @param int[] $siteIds
+     * @return array<int,float> [site_id => yüzde]
+     */
+    public function getUptimeMap(array $siteIds, int $days = 1): array
+    {
+        return $this->logs->calculateUptimeForSites($siteIds, $days);
+    }
+
+    /**
      * Bir sitenin günlük uptime şeridi (public status sayfası).
      *
      * @return array<string,float|null>
