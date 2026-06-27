@@ -24,39 +24,52 @@ $stmt = $pdo->prepare("
 ");
 $stmt->execute([$site_id, $hours]);
 $all_logs = $stmt->fetchAll();
+$total_count = count($all_logs);
 
-// Grafik verileri
+// PERFORMANS: Tarayıcıyı kilitlememek için grafikte en fazla bu kadar nokta göster.
+// Çok kayıt varsa eşit aralıkla örnekle (downsample) — şekil korunur, render hızlanır.
+$MAX_POINTS = 300;
+if ($total_count > $MAX_POINTS) {
+    $step = (int)ceil($total_count / $MAX_POINTS);
+    $sampled = [];
+    for ($i = 0; $i < $total_count; $i += $step) {
+        $sampled[] = $all_logs[$i];
+    }
+    // En güncel kaydı her zaman dahil et
+    if ($all_logs[$total_count - 1] !== end($sampled)) {
+        $sampled[] = $all_logs[$total_count - 1];
+    }
+} else {
+    $sampled = $all_logs;
+}
+
+// Grafik verileri (yalnızca örneklenmiş noktalar)
 $chart_labels = [];
 $chart_data = [];
-$chart_colors = [];
-$chart_segment_colors = [];
+$tooltip_meta = []; // tooltip için hafif veri (durum + yanıt süresi)
 
-if (count($all_logs) > 0) {
-    foreach ($all_logs as $log) {
+if (count($sampled) > 0) {
+    foreach ($sampled as $log) {
         $timestamp = strtotime($log['timestamp']);
-        
+
         // Label formatı (zaman aralığına göre)
         if ($hours <= 6) {
-            $label = date('H:i', $timestamp); // Saatlik görünüm
+            $label = date('H:i', $timestamp);
         } elseif ($hours <= 48) {
-            $label = date('d.m H:i', $timestamp); // Günlük görünüm
+            $label = date('d.m H:i', $timestamp);
         } else {
-            $label = date('d.m.Y', $timestamp); // Haftalık/aylık görünüm
+            $label = date('d.m.Y', $timestamp);
         }
-        
+
         $chart_labels[] = $label;
-        
-        // UP = 1, DOWN = 0 (çizgi grafiği için)
-        $chart_data[] = $log['status'] === 'up' ? 1 : 0;
-        
-        // Renk belirleme
-        $chart_colors[] = $log['status'] === 'up' ? 'rgba(40, 167, 69, 0.8)' : 'rgba(220, 53, 69, 0.8)';
+        $chart_data[]   = $log['status'] === 'up' ? 1 : 0;
+        $tooltip_meta[] = ['s' => $log['status'], 'r' => $log['response_time']];
     }
 } else {
     // Veri yoksa mevcut durumu göster
     $chart_labels[] = date('H:i');
-    $chart_data[] = $site['last_status'] === 'up' ? 1 : 0;
-    $chart_colors[] = $site['last_status'] === 'up' ? 'rgba(40, 167, 69, 0.8)' : 'rgba(220, 53, 69, 0.8)';
+    $chart_data[]   = $site['last_status'] === 'up' ? 1 : 0;
+    $tooltip_meta[] = ['s' => $site['last_status'], 'r' => null];
 }
 
 $chart_title = $site['name'] . ' - Durum Grafiği';
@@ -81,7 +94,7 @@ switch ($time_range) {
                     <i class="fas fa-clock"></i> <?= $interval_text ?>
                 </small>
                 <small class="text-muted">
-                    <i class="fas fa-database"></i> <?= count($all_logs) ?> kontrol kaydı
+                    <i class="fas fa-database"></i> <?= number_format($total_count) ?> kontrol kaydı<?php if ($total_count > $MAX_POINTS): ?> <span title="Performans için grafikte <?= $MAX_POINTS ?> nokta gösteriliyor">(örneklendi)</span><?php endif; ?>
                 </small>
             </div>
         </div>
@@ -111,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const chartLabels = <?= json_encode($chart_labels) ?>;
     const chartData = <?= json_encode($chart_data) ?>;
-    const allLogs = <?= json_encode($all_logs) ?>;
+    const tipMeta = <?= json_encode($tooltip_meta) ?>;
     
     // Area chart için renk dizilerini hazırla
     const backgroundColorArray = chartData.map(val => 
@@ -135,8 +148,8 @@ document.addEventListener('DOMContentLoaded', function() {
             backgroundColor: backgroundColorArray,
             borderColor: borderColorArray,
             borderWidth: 2,
-            pointRadius: 3,
-            pointHoverRadius: 6,
+            pointRadius: 0,          // PERFORMANS: noktaları çizme (asıl yavaşlık buydu)
+            pointHoverRadius: 5,
             pointBackgroundColor: pointColorArray,
             pointBorderColor: '#fff',
             pointBorderWidth: 2,
@@ -152,10 +165,9 @@ document.addEventListener('DOMContentLoaded', function() {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            animation: {
-                duration: 1000,
-                easing: 'easeInOutQuart'
-            },
+            animation: false,        // PERFORMANS: animasyon kapalı (çok noktada donmayı önler)
+            normalized: true,
+            spanGaps: true,
             plugins: {
                 legend: {
                     display: false
@@ -170,20 +182,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     displayColors: false,
                     callbacks: {
                         title: function(context) {
-                            const idx = context[0].dataIndex;
-                            if (allLogs[idx]) {
-                                return 'Kontrol Zamanı: ' + context[0].label;
-                            }
-                            return context[0].label;
+                            return 'Kontrol Zamanı: ' + context[0].label;
                         },
                         label: function(context) {
                             const idx = context.dataIndex;
-                            const log = allLogs[idx];
+                            const log = tipMeta[idx];
                             if (!log) return '';
-                            
-                            const status = log.status === 'up' ? '✅ Çalışıyor (UP)' : '❌ Kesinti (DOWN)';
-                            const responseTime = log.response_time ? log.response_time + 'ms' : '-';
-                            
+
+                            const status = log.s === 'up' ? '✅ Çalışıyor (UP)' : '❌ Kesinti (DOWN)';
+                            const responseTime = log.r ? log.r + 'ms' : '-';
+
                             return [
                                 'Durum: ' + status,
                                 'Yanıt Süresi: ' + responseTime
