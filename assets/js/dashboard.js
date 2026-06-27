@@ -723,13 +723,13 @@ function editSite(site) {
 
     // Otomatik güncellemeyi başlat
     function startAutoUpdate() {
-    // İlk güncelleme 10 saniye sonra
-    setTimeout(updateDashboard, 10000);
-    
-    // Her 30 saniyede bir güncelle - Performans için optimize edildi
-    updateInterval = setInterval(updateDashboard, 30000);
-        
-        console.log('Gerçek zamanlı dashboard güncellemesi başlatıldı (30 saniye aralıklarla)');
+    // İlk güncelleme 60 saniye sonra
+    setTimeout(updateDashboard, 60000);
+
+    // Her 60 saniyede bir güncelle - Performans için (yükü azaltmak adına)
+    updateInterval = setInterval(updateDashboard, 60000);
+
+        console.log('Gerçek zamanlı dashboard güncellemesi başlatıldı (60 saniye aralıklarla)');
     }
 
     // Otomatik güncellemeyi durdur

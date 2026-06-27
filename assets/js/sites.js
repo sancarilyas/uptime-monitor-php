@@ -543,13 +543,13 @@
     function startAutoUpdate() {
         if (updateInterval) return;
         
-        // İlk güncelleme 10 saniye sonra
-        setTimeout(updateSitesPage, 10000);
-        
-        // Her 30 saniyede bir güncelle - Performans için optimize edildi
-        updateInterval = setInterval(updateSitesPage, 30000);
-        
-        console.log('Gerçek zamanlı sites güncellemesi başlatıldı (30 saniye aralıklarla)');
+        // İlk güncelleme 60 saniye sonra
+        setTimeout(updateSitesPage, 60000);
+
+        // Her 60 saniyede bir güncelle - Performans için (yükü azaltmak adına)
+        updateInterval = setInterval(updateSitesPage, 60000);
+
+        console.log('Gerçek zamanlı sites güncellemesi başlatıldı (60 saniye aralıklarla)');
     }
     
     // Otomatik güncellemeyi durdur
